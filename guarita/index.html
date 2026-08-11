@@ -184,6 +184,26 @@ textarea{min-height:78px;resize:vertical}
 .cen .n{font-family:var(--serif);font-size:16px;margin-top:6px}
 .cen .q{font-size:12px;color:var(--ink-3);margin-top:3px}
 
+/* ── ícones, avatares e imagem de câmera ─────────────── */
+.svgi{display:block;flex:none}
+.nav .ic{display:flex;align-items:center;justify-content:center;width:20px;color:var(--ink-3)}
+.nav.on .ic,.nav:hover .ic{color:var(--gold)}
+.avt{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;
+  color:#fff;font-weight:600;letter-spacing:.02em;flex:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.pess{display:flex;align-items:center;gap:10px}
+.mural{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.cam{position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;
+  background:#0a0d11;cursor:pointer;line-height:0}
+.cam:hover{border-color:var(--gold-dk)}
+.cam.ruim{border-color:var(--neg)}
+.cam canvas{width:100%;height:auto;display:block}
+.camrot{line-height:1.35;padding:7px 9px;font-size:12px;color:var(--ink-2);
+  background:var(--surface);border-top:1px solid var(--line-soft);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camgr{border-radius:9px;overflow:hidden;border:1px solid var(--line);line-height:0}
+.camgr canvas{width:100%;height:auto;display:block}
+
 @media print{
   .side,.top,.linha-b,.noprint{display:none!important}
   .app{display:block;height:auto}.corpo{overflow:visible;padding:0}
@@ -253,7 +273,7 @@ textarea{min-height:78px;resize:vertical}
 
 var VERSAO = '1.0';
 var DATA_VERSAO = '10/08/2026';
-var LS = 'm7m.guarita.v2';
+var LS = 'm7m.guarita.v3';
 
 var INVENTARIO = { apartamentos:19, leitos:23, terreo:8, primeiro:8, duplex:3,
   vagas:10, lavadoras:8, vending:3, camerasPrevistas:33 };
@@ -497,6 +517,295 @@ var POPS = [
 
 
 /* ══════════════════════════════════════════════════════════════
+   VISUAL — ícones desenhados, avatares e imagem das câmeras
+   As cenas são desenhadas em canvas, do mesmo jeito que o app do
+   condomínio faz: nenhuma imagem externa, nada carregado da rede.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── ícones ──────────────────────────────────────────── */
+var ICONES = {
+  painel:'<rect x="3" y="3.5" width="7.5" height="7" rx="1"/><rect x="13.5" y="3.5" width="7.5" height="7" rx="1"/><rect x="3" y="13.5" width="7.5" height="7" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7" rx="1"/>',
+  acessos:'<path d="M3 8.5h13"/><path d="M12.5 5 16 8.5 12.5 12"/><path d="M21 15.5H8"/><path d="M11.5 12 8 15.5 11.5 19"/>',
+  encomendas:'<rect x="2.5" y="5.5" width="19" height="13" rx="1.5"/><path d="m2.5 7 9.5 6.5L21.5 7"/>',
+  chaves:'<circle cx="8" cy="8" r="4"/><path d="m11 11 9 9"/><path d="m16.5 16.5 2.5-2.5"/><path d="m19 19 2-2"/>',
+  rondas:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.4 2"/>',
+  cameras:'<path d="M3 7.5h11a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H3z"/><path d="m15.5 12.5 5.5-3v8l-5.5-3z"/>',
+  recepcao:'<path d="M4.5 4h3.2l1.6 4-2 1.2a11 11 0 0 0 5.5 5.5l1.2-2 4 1.6v3.2a1.5 1.5 0 0 1-1.7 1.5A16 16 0 0 1 3 5.7 1.5 1.5 0 0 1 4.5 4z"/>',
+  alunos:'<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+  telefones:'<rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M10.5 18.5h3"/>',
+  emergencia:'<path d="M12 3.5 21 19H3z"/><path d="M12 10v4"/><path d="M12 16.5h.01"/>',
+  ocorrencias:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/>',
+  caixa:'<rect x="2.5" y="6" width="19" height="12" rx="1.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9v6"/><path d="M18 9v6"/>',
+  auditoria:'<path d="M4 20V9"/><path d="M9.5 20V4"/><path d="M15 20v-7"/><path d="M20.5 20V7"/>',
+  turno:'<path d="M4 8h13"/><path d="m13.5 4.5 3.5 3.5-3.5 3.5"/><path d="M20 16H7"/><path d="m10.5 12.5-3.5 3.5 3.5 3.5"/>',
+  manual:'<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.5v.4"/><path d="M12 17h.01"/>',
+  dados:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>'
+};
+function ico(n, tam){
+  return '<svg class="svgi" viewBox="0 0 24 24" width="'+(tam||19)+'" height="'+(tam||19)+'" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+    (ICONES[n] || ICONES.painel) + '</svg>';
+}
+
+/* ── avatar com as iniciais ──────────────────────────── */
+function matiz(str){ var h = 0; str = String(str||'?');
+  for(var i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i)) % 360; return h; }
+function iniciais(nome){
+  var p = String(nome||'?').replace(/[^\wÀ-ÿ ]/g,' ').trim().split(/\s+/);
+  return ((p[0]||'?')[0] + (p.length > 1 ? p[p.length-1][0] : '')).toUpperCase();
+}
+function avatar(nome, tam){
+  var h = matiz(nome), t = tam || 34;
+  return '<span class="avt" style="width:'+t+'px;height:'+t+'px;font-size:'+Math.round(t*0.38)+'px;' +
+    'background:linear-gradient(145deg,hsl('+h+' 42% 34%),hsl('+((h+38)%360)+' 38% 22%))">' +
+    esc(iniciais(nome)) + '</span>';
+}
+function comAvatar(nome, sub, tam){
+  return '<div class="pess">' + avatar(nome, tam) + '<div><strong>' + esc(nome) + '</strong>' +
+    (sub ? '<div class="peq mut">' + esc(sub) + '</div>' : '') + '</div></div>';
+}
+
+/* ── câmeras: que cena cada uma mostra ───────────────── */
+function cenaDe(cam){
+  var id = cam.id, z = cam.z;
+  if(id === 'C02') return 'recepcao';
+  if(id === 'C04' || id === 'C16') return 'salao';
+  if(z === 'Acessos') return id === 'C03' ? 'garagem' : 'portaria';
+  if(z === 'Perímetro') return 'exterior';
+  if(z === 'Estacionamento') return 'garagem';
+  if(z === 'Térreo' || z === '1º andar') return 'corredor';
+  if(z === 'Convivência') return 'gourmet';
+  if(z === 'Piscina') return 'piscina';
+  if(z === 'Academia') return 'academia';
+  if(z === 'Serviços') return 'servicos';
+  if(z === 'Comercial') return 'mercado';
+  return 'corredor';
+}
+
+/* paleta por cena: [céu/fundo, piso, parede, detalhe] */
+var PAL = {
+  portaria:['#16202b','#232c34','#2d3944','#c2a468'],
+  exterior:['#131c26','#1e2730','#28323c','#8fa3b5'],
+  garagem: ['#171c22','#22282f','#2c333b','#9aa7b3'],
+  corredor:['#1a1f26','#242b33','#30383f','#c2a468'],
+  salao:   ['#1c222a','#272f38','#333c46','#d8c79c'],
+  recepcao:['#1d232b','#293139','#353f4a','#c2a468'],
+  piscina: ['#101a24','#17303f','#20404f','#5fb6c8'],
+  academia:['#191d23','#232a31','#2f363e','#9fb0bd'],
+  servicos:['#181d24','#232931','#2e353d','#a8b4be'],
+  gourmet: ['#1b2029','#262d36','#323a44','#d0a95f'],
+  mercado: ['#1c2129','#272e37','#343d47','#cbb583']
+};
+
+function _pessoa(ctx, x, chao, alt, cor){
+  ctx.fillStyle = cor;
+  ctx.beginPath(); ctx.arc(x, chao - alt, alt*0.13, 0, 6.3); ctx.fill();
+  ctx.fillRect(x - alt*0.11, chao - alt*0.84, alt*0.22, alt*0.46);
+  ctx.fillRect(x - alt*0.10, chao - alt*0.40, alt*0.08, alt*0.40);
+  ctx.fillRect(x + alt*0.02, chao - alt*0.40, alt*0.08, alt*0.40);
+}
+function _carro(ctx, x, y, larg, cor, farol){
+  var a = larg*0.34;
+  ctx.fillStyle = cor;
+  ctx.fillRect(x, y - a, larg, a);
+  ctx.fillRect(x + larg*0.22, y - a*1.7, larg*0.56, a*0.7);
+  ctx.fillStyle = 'rgba(0,0,0,.45)';
+  ctx.beginPath(); ctx.arc(x + larg*0.24, y, a*0.26, 0, 6.3); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + larg*0.76, y, a*0.26, 0, 6.3); ctx.fill();
+  if(farol){
+    ctx.fillStyle = 'rgba(255,238,190,.5)';
+    ctx.beginPath(); ctx.moveTo(x + larg, y - a*0.7);
+    ctx.lineTo(x + larg + 46, y - a*1.6); ctx.lineTo(x + larg + 46, y + 6); ctx.closePath(); ctx.fill();
+  }
+}
+
+function desenharCena(ctx, tipo, t, W, H){
+  var p = PAL[tipo] || PAL.corredor, chao = H*0.78;
+  ctx.fillStyle = p[0]; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = p[2]; ctx.fillRect(0, H*0.18, W, chao - H*0.18);
+  ctx.fillStyle = p[1]; ctx.fillRect(0, chao, W, H - chao);
+
+  if(tipo === 'portaria' || tipo === 'exterior'){
+    ctx.fillStyle = p[1]; ctx.fillRect(0, chao - 2, W, 3);
+    ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.lineWidth = 2;
+    for(var g = 0; g < 9; g++){
+      ctx.beginPath(); ctx.moveTo(W*0.12 + g*W*0.032, H*0.30);
+      ctx.lineTo(W*0.12 + g*W*0.032, chao); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(255,238,190,.10)';
+    ctx.beginPath(); ctx.moveTo(W*0.72, H*0.10); ctx.lineTo(W*0.95, chao);
+    ctx.lineTo(W*0.45, chao); ctx.closePath(); ctx.fill();
+    _pessoa(ctx, W*0.30 + Math.sin(t/1400)*W*0.16, chao, H*0.30, '#7f8b96');
+    if(tipo === 'exterior') _carro(ctx, W*0.55 + Math.sin(t/2600)*W*0.12, chao, W*0.26, '#3a444e', true);
+  }
+  else if(tipo === 'garagem'){
+    ctx.strokeStyle = 'rgba(255,255,255,.13)'; ctx.lineWidth = 2;
+    for(var v = 0; v < 5; v++){
+      ctx.beginPath(); ctx.moveTo(v*W*0.24 + 8, chao*0.52);
+      ctx.lineTo(v*W*0.24 - 10, H); ctx.stroke();
+    }
+    _carro(ctx, W*0.06, chao, W*0.22, '#39434d', false);
+    _carro(ctx, W*0.36, chao, W*0.22, '#4a4038', false);
+    _carro(ctx, W*0.66 + Math.sin(t/3000)*10, chao, W*0.22, '#2f3a44', true);
+    ctx.fillStyle = 'rgba(194,164,104,.45)';
+    ctx.fillRect(W*0.02, chao*0.45, W*0.30, 3);
+  }
+  else if(tipo === 'corredor'){
+    ctx.fillStyle = p[1];
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W*0.30, chao*0.62);
+    ctx.lineTo(W*0.70, chao*0.62); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    for(var d = 0; d < 3; d++){
+      ctx.fillRect(W*(0.08 + d*0.10), chao*0.60 - d*4, W*0.05, H*0.30 + d*8);
+      ctx.fillRect(W*(0.86 - d*0.10), chao*0.60 - d*4, W*0.05, H*0.30 + d*8);
+    }
+    ctx.fillStyle = 'rgba(255,240,200,.13)';
+    for(var l = 0; l < 3; l++) ctx.fillRect(W*0.44, H*0.16 + l*H*0.13, W*0.12, 4);
+    _pessoa(ctx, W*0.50 + Math.sin(t/1800)*W*0.10, chao*0.96, H*0.26, '#8c97a1');
+  }
+  else if(tipo === 'salao' || tipo === 'recepcao'){
+    ctx.fillStyle = 'rgba(0,0,0,.30)'; ctx.fillRect(W*0.06, chao*0.66, W*0.40, H*0.16);
+    ctx.fillStyle = p[3]; ctx.fillRect(W*0.06, chao*0.66, W*0.40, 4);
+    ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(W*0.60, H*0.20, W*0.32, H*0.42);
+    _pessoa(ctx, W*0.24, chao, H*0.30, '#94a0aa');
+    if(tipo === 'recepcao') _pessoa(ctx, W*0.68 + Math.sin(t/2200)*W*0.05, chao, H*0.30, '#7e8a95');
+  }
+  else if(tipo === 'piscina'){
+    ctx.fillStyle = '#16394a'; ctx.fillRect(W*0.10, chao*0.52, W*0.80, H*0.42);
+    ctx.strokeStyle = 'rgba(150,220,235,.30)'; ctx.lineWidth = 2;
+    for(var o = 0; o < 6; o++){
+      ctx.beginPath();
+      for(var x2 = W*0.10; x2 < W*0.90; x2 += 6){
+        var y2 = chao*0.58 + o*H*0.06 + Math.sin((x2 + t/26 + o*20)/22)*2.4;
+        if(x2 === W*0.10) ctx.moveTo(x2, y2); else ctx.lineTo(x2, y2);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#3c4650';
+    ctx.fillRect(W*0.04, chao*0.80, W*0.05, H*0.10); ctx.fillRect(W*0.91, chao*0.80, W*0.05, H*0.10);
+  }
+  else if(tipo === 'academia'){
+    ctx.fillStyle = 'rgba(0,0,0,.30)';
+    ctx.fillRect(W*0.08, chao*0.60, W*0.16, H*0.26);
+    ctx.fillRect(W*0.40, chao*0.66, W*0.14, H*0.20);
+    ctx.fillStyle = p[3];
+    ctx.fillRect(W*0.08, chao*0.60, W*0.16, 3);
+    _pessoa(ctx, W*0.46, chao, H*0.28 + Math.sin(t/500)*2, '#9aa6b0');
+    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(W*0.66, H*0.22, W*0.28, H*0.40);
+  }
+  else if(tipo === 'servicos'){
+    for(var m = 0; m < 4; m++){
+      ctx.fillStyle = 'rgba(255,255,255,.07)';
+      ctx.fillRect(W*(0.06 + m*0.23), chao*0.52, W*0.18, H*0.38);
+      ctx.strokeStyle = 'rgba(190,205,215,.35)'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(W*(0.15 + m*0.23), chao*0.72, H*0.10, 0, 6.3); ctx.stroke();
+      ctx.save();
+      ctx.translate(W*(0.15 + m*0.23), chao*0.72); ctx.rotate(t/(700 + m*180));
+      ctx.strokeStyle = 'rgba(190,205,215,.22)';
+      ctx.beginPath(); ctx.moveTo(-H*0.08, 0); ctx.lineTo(H*0.08, 0); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  else if(tipo === 'gourmet' || tipo === 'mercado'){
+    ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.fillRect(W*0.14, chao*0.70, W*0.52, H*0.10);
+    ctx.fillStyle = p[3]; ctx.fillRect(W*0.14, chao*0.70, W*0.52, 3);
+    for(var b = 0; b < 4; b++){
+      ctx.fillStyle = 'rgba(0,0,0,.28)';
+      ctx.fillRect(W*(0.18 + b*0.13), chao*0.80, W*0.05, H*0.12);
+    }
+    if(tipo === 'mercado'){
+      ctx.fillStyle = 'rgba(255,255,255,.06)';
+      for(var p2 = 0; p2 < 3; p2++) ctx.fillRect(W*0.70, H*0.24 + p2*H*0.14, W*0.24, H*0.09);
+    } else {
+      ctx.fillStyle = 'rgba(255,170,80,' + (0.28 + Math.sin(t/300)*0.10) + ')';
+      ctx.fillRect(W*0.72, chao*0.62, W*0.18, H*0.14);
+    }
+    _pessoa(ctx, W*0.40 + Math.sin(t/2400)*W*0.06, chao, H*0.28, '#8d98a3');
+  }
+
+  /* vinheta e linhas de varredura, para parecer imagem de CFTV */
+  var g2 = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, H*0.95);
+  g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,.55)');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,.022)';
+  for(var s = 0; s < H; s += 3) ctx.fillRect(0, s, W, 1);
+}
+
+function ruido(ctx, W, H, forca){
+  var n = Math.round(W*H*0.05);
+  ctx.fillStyle = 'rgba(255,255,255,' + forca + ')';
+  for(var i = 0; i < n; i++)
+    ctx.fillRect((Math.random()*W)|0, (Math.random()*H)|0, 1, 1);
+}
+
+function pintarCam(cv, cam, t){
+  var ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  if(cam.st === 'off'){
+    ctx.fillStyle = '#0a0d11'; ctx.fillRect(0, 0, W, H);
+    ruido(ctx, W, H, 0.22);
+    ctx.fillStyle = 'rgba(220,99,99,.92)';
+    ctx.font = '600 ' + Math.round(H*0.11) + 'px system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SEM SINAL', W/2, H/2 + H*0.04);
+    ctx.textAlign = 'left';
+  } else {
+    desenharCena(ctx, cenaDe(cam), t, W, H);
+    if(cam.st === 'deg'){
+      ctx.fillStyle = 'rgba(120,130,140,.28)'; ctx.fillRect(0, 0, W, H);
+      ruido(ctx, W, H, 0.10);
+    }
+  }
+  /* selo: código, hora e o ponto de gravação */
+  var d = new Date();
+  ctx.font = '600 ' + Math.max(9, Math.round(H*0.075)) + 'px ui-monospace,Consolas,monospace';
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, W, H*0.13);
+  ctx.fillStyle = 'rgba(255,255,255,.82)';
+  ctx.fillText(cam.id + '  ' + cam.nm.slice(0, 22), 6, H*0.095);
+  ctx.textAlign = 'right';
+  ctx.fillText(pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()), W - 6, H*0.095);
+  ctx.textAlign = 'left';
+  if(cam.st !== 'off' && (d.getSeconds() % 2 === 0)){
+    ctx.fillStyle = '#dc6363';
+    ctx.beginPath(); ctx.arc(W - 8, H - 10, 3.4, 0, 6.3); ctx.fill();
+  }
+}
+
+/* ── laço de animação, só do que está na tela ────────── */
+var _cvs = [], _laco = null;
+function ligarCanvas(){
+  _cvs = [];
+  var lista = document.querySelectorAll('canvas[data-cv]');
+  for(var i = 0; i < lista.length; i++){
+    var cv = lista[i], id = cv.getAttribute('data-cv'), cam = null;
+    S.cameras.forEach(function(c){ if(c.id === id) cam = c; });
+    if(!cam) continue;
+    var r = cv.getBoundingClientRect();
+    cv.width = Math.max(120, Math.round(r.width || cv.clientWidth || 240));
+    cv.height = Math.round(cv.width * 0.5625);
+    _cvs.push({ cv:cv, cam:cam });
+  }
+  if(!_laco && _cvs.length) _laco = requestAnimationFrame(quadro);
+}
+function quadro(t){
+  for(var i = 0; i < _cvs.length; i++) pintarCam(_cvs[i].cv, _cvs[i].cam, t);
+  _laco = _cvs.length ? requestAnimationFrame(quadro) : null;
+}
+function telaCam(cam, alt){
+  return '<div class="cam' + (cam.st !== 'on' ? ' ruim' : '') + '" data-cam="' + cam.id + '">' +
+    '<canvas data-cv="' + cam.id + '"></canvas>' +
+    '<div class="camrot"><span class="mono">' + esc(cam.id) + '</span> ' + esc(cam.nm) +
+    (cam.st === 'off' ? ' <span class="et ng">fora</span>' : cam.st === 'deg' ? ' <span class="et at">ruim</span>' : '') +
+    '</div></div>';
+}
+function muralCameras(ids){
+  var sel = [];
+  S.cameras.forEach(function(c){ if(ids.indexOf(c.id) >= 0) sel.push(c); });
+  return '<div class="mural">' + sel.map(function(c){ return telaCam(c); }).join('') + '</div>';
+}
+
+
+/* ══════════════════════════════════════════════════════════════
    NÚCLEO — estado, gravação, atalhos de tela
    ══════════════════════════════════════════════════════════════ */
 var S = null, VIEW = 'painel', BUSCA = '', TELAS = {};
@@ -506,7 +815,7 @@ function agora(){ return new Date().toISOString(); }
 
 function semente(){
   var st = {
-    v:1, criado:agora(), demo:true, tema:'escuro',
+    v:1, criado:agora(), demo:true, tema:'claro',
     turno:null, turnos:[],
     unidades:[], chaves:[], chavesHist:[], acessos:[], encomendas:[],
     contatos:[], ocorrencias:[], rondas:[], emergencias:[], cameras:[],
@@ -610,10 +919,15 @@ function folha(titulo, sub, corpo, botoes, larga){
     return '<button class="b '+(b.cls||'')+'" data-fb="'+i+'">'+esc(b.txt)+'</button>'; }).join('');
   _ok = (botoes||[]).map(function(b){ return b.fn; });
   document.getElementById('scrim').classList.add('on');
+  ligarCanvas();
   var pf = document.querySelector('#fBody input,#fBody select,#fBody textarea');
   if(pf) setTimeout(function(){ pf.focus(); }, 40);
 }
-function fechar(){ document.getElementById('scrim').classList.remove('on'); _ok = null; }
+function fechar(){
+  document.getElementById('scrim').classList.remove('on'); _ok = null;
+  document.getElementById('fBody').innerHTML = '';
+  ligarCanvas();
+}
 
 /* campos: {id, rot, tipo:'texto|num|sel|area|data|hora|tel', opts:[], val, dica, largo} */
 function campos(cs){
@@ -707,7 +1021,7 @@ function pintarMenu(){
     if(m.g) return '<div class="grp">'+esc(m.g)+'</div>';
     var b = alertas[m.v];
     return '<button class="nav'+(VIEW===m.v?' on':'')+'" data-ir="'+m.v+'">' +
-      '<span class="ic">'+m.ic+'</span><span>'+esc(m.n)+'</span>' +
+      '<span class="ic">'+ico(m.v)+'</span><span>'+esc(m.n)+'</span>' +
       (b ? '<span class="bd'+(b.al?' al':'')+'">'+b.n+'</span>' : (m.k?'<span class="kb">'+m.k+'</span>':'')) +
       '</button>';
   }).join('');
@@ -759,6 +1073,7 @@ function pintar(){
   var fn = TELAS[VIEW];
   document.getElementById('corpo').innerHTML = fn ? fn() : '<div class="vazio">Tela não encontrada: ' + esc(VIEW) + '</div>';
   document.getElementById('corpo').scrollTop = 0;
+  ligarCanvas();
 }
 
 function relogio(){
@@ -814,8 +1129,7 @@ function v_painel(){
     '<span class="esp"><button class="b d s" data-emg="'+em[0].id+'">Continuar</button></span></div>' : '';
 
   var linhasDentro = dentro.slice(0,10).map(function(a){
-    return '<tr><td><strong>'+esc(a.nome)+'</strong><div class="peq mut">'+esc(a.tipo)+
-      (a.empresa?' · '+esc(a.empresa):'')+'</div></td>' +
+    return '<tr><td>'+comAvatar(a.nome, a.tipo + (a.empresa?' · '+a.empresa:''), 30)+'</td>' +
       '<td>'+esc(a.unidade||'—')+'</td><td class="num">'+hm(a.entrada)+'</td>' +
       '<td class="num">'+decorrido(a.entrada)+'</td>' +
       '<td class="dir"><button class="b s" data-saida="'+a.id+'">Registrar saída</button></td></tr>';
@@ -828,6 +1142,8 @@ function v_painel(){
 
   return avisoDemo() + emAberto + avisoTurno() +
     '<div class="grade g6" style="margin-bottom:14px">'+k+'</div>' +
+    cartao('Câmeras dos acessos · ao vivo', muralCameras(['C01','C03','C05','C02']),
+      '<button class="b s" data-ir="cameras">Ver as 33</button>') +
     '<div class="grade g2">' +
       cartao('Dentro do condomínio agora',
         tabela([{t:'Quem'},{t:'Unidade'},{t:'Entrada'},{t:'Há'},{t:'',dir:true}], linhasDentro,
@@ -877,7 +1193,7 @@ function v_acessos(){
     return !q || (a.nome+' '+a.doc+' '+a.unidade+' '+(a.placa||'')).toLowerCase().indexOf(q) >= 0; }).slice(0,60);
 
   var lDentro = dentro.map(function(a){
-    return '<tr><td><strong>'+esc(a.nome)+'</strong><div class="peq mut">'+esc(a.doc||'sem documento')+'</div></td>' +
+    return '<tr><td>'+comAvatar(a.nome, a.doc||'sem documento')+'</td>' +
       '<td>'+esc(a.tipo)+(a.empresa?'<div class="peq mut">'+esc(a.empresa)+'</div>':'')+'</td>' +
       '<td>'+esc(a.unidade||'—')+'<div class="peq mut">'+esc(a.autorizadoPor||'')+'</div></td>' +
       '<td class="num">'+esc(a.placa||'—')+'</td>' +
@@ -1196,23 +1512,20 @@ function v_cameras(){
   S.cameras.forEach(function(c){ (zonas[c.z] = zonas[c.z] || []).push(c); });
   var off = S.cameras.filter(function(c){ return c.st !== 'on'; });
   var blocos = Object.keys(zonas).map(function(z){
-    var linhas = zonas[z].map(function(c){
-      var et = c.st === 'on' ? '<span class="et ok">no ar</span>'
-        : c.st === 'deg' ? '<span class="et at">degradada</span>' : '<span class="et ng">fora</span>';
-      return '<tr><td class="mono">'+esc(c.id)+'</td><td>'+esc(c.nm)+
-        (c.nota?'<div class="peq mut">'+esc(c.nota)+'</div>':'')+'</td>' +
-        '<td>'+et+'</td><td class="dir"><button class="b s" data-cam="'+c.id+'">Alterar</button></td></tr>';
-    });
-    return cartao(z, tabela([{t:'Cód.'},{t:'Câmera'},{t:'Estado'},{t:'',dir:true}], linhas), '', true);
+    return cartao(z, '<div class="mural">' + zonas[z].map(function(c){ return telaCam(c); }).join('') + '</div>',
+      esc(zonas[z].length + ' câmeras'));
   }).join('');
   return (off.length ? '<div class="faixa av">◉ <strong>'+off.length+' câmera(s) fora do ar ou degradada(s).</strong> ' +
       'Sem câmera no trecho, a ronda a pé cobre o buraco — e isso vai para o livro.</div>' : '') +
-    '<div class="grade g2">' + blocos + '</div>';
+    '<div class="faixa">🎥 As imagens são geradas dentro do próprio programa, para demonstração. ' +
+      'Na instalação real, cada quadro destes recebe o fluxo da câmera correspondente do gravador.</div>' +
+    blocos;
 }
 function alterarCamera(id){
   var c = null; S.cameras.forEach(function(x){ if(x.id === id) c = x; });
   if(!c) return;
   folha('Câmera ' + c.id, c.nm + ' · ' + c.z,
+    '<div class="camgr" style="margin-bottom:14px"><canvas data-cv="'+c.id+'"></canvas></div>' +
     campos([
       { id:'st', rot:'Estado', tipo:'sel', val:c.st,
         opts:[{v:'on',t:'No ar'},{v:'deg',t:'Degradada (imagem ruim, sem infravermelho)'},{v:'off',t:'Fora do ar'}] },
@@ -1324,7 +1637,7 @@ function v_alunos(){
   var linhas = lista.map(function(u){
     var r = u.resp[0] || {};
     return '<tr><td class="mono">'+esc(u.cod)+'<div class="peq mut">'+esc(PRODUTOS[u.tipo].nome)+'</div></td>' +
-      '<td><strong>'+esc(u.aluno)+'</strong><div class="peq mut">'+esc(u.curso)+'</div></td>' +
+      '<td>'+comAvatar(u.aluno, u.curso, 32)+'</td>' +
       '<td class="num">'+esc(u.tel)+'</td>' +
       '<td>'+esc(r.nome||'—')+'<div class="peq mut">'+esc(r.rel||'')+'</div></td>' +
       '<td class="num">'+esc(r.tel||'—')+'</td>' +
@@ -1348,10 +1661,10 @@ function fichaUnidade(cod){
   var visitas = S.acessos.filter(function(a){ return a.unidade === cod; }).slice(0,8);
   folha('Unidade ' + u.cod, p.nome + ' · ' + p.tip + ' · ' + u.andar + (u.vaga ? ' · vaga ' + u.vaga : ' · sem vaga'),
     '<div class="grade g2">' +
-      '<div class="cartao"><h3>Aluno</h3><div class="cnt">' +
+      '<div class="cartao"><h3>Aluno</h3><div class="cnt"><div class="pess">' + avatar(u.aluno, 54) + '<div>' +
         '<div style="font-family:var(--serif);font-size:20px">'+esc(u.aluno)+'</div>' +
         '<div class="mut peq">'+esc(u.curso)+'</div>' +
-        '<div class="mono" style="margin-top:6px">'+esc(u.tel)+'</div></div></div>' +
+        '<div class="mono" style="margin-top:4px">'+esc(u.tel)+'</div></div></div></div></div>' +
       '<div class="cartao"><h3>Saúde · uso em emergência</h3><div class="cnt peq">' +
         'Sangue: '+esc(u.saude.sangue||'não informado')+'<br>' +
         'Alergia: '+esc(u.saude.alergia||'nenhuma informada')+'<br>' +
