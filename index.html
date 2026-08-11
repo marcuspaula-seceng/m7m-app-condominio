@@ -1,0 +1,3376 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="googlebot" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F4F1EB">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="M7M">
+<meta name="description" content="Demonstracao do aplicativo do condominio da Villa Universitaria M7M.">
+<title>M7M · App do Condomínio — demonstração</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E">
+<style>html,body{margin:0;padding:0;background:#F4F1EB}img{max-width:100%}</style>
+</head>
+<body>
+
+<style>
+:root{
+  color-scheme:light;
+
+  /* Porcelana quente e grafite. O dourado da marca continua o mesmo
+     acento, escurecido o bastante para se ler sobre fundo claro. */
+  --ground:#F4F1EB;
+  --surface:#FFFFFF;
+  --surface-2:#EDE9E0;
+  --surface-3:#E3DED2;
+  --line:#D8D2C4;
+  --line-soft:#E7E2D7;
+
+  --ink:#191E25;
+  --ink-2:#4C555F;
+  --ink-3:#7C8792;
+  --ink-4:#A6AEB8;
+
+  --gold:#9C7C31;
+  --gold-lt:#C4A55F;
+  --gold-dk:#7C6224;
+  --gold-dkr:#DCCFA8;
+
+  --pos:#2E8B57;
+  --warn:#B07A16;
+  --neg:#C0392B;
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+/* toque de celular: sem flash azul, sem zoom acidental no toque duplo */
+button,a,.slot,.desk,.vaga,.day,.tab{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+input,select{font-size:16px}   /* impede o iPhone de dar zoom ao focar um campo */
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+
+/* ══ palco ═══════════════════════════════════════════
+   Um só layout, quatro formatos:
+   celular      → o app ocupa a tela inteira, sem moldura
+   celular deitado / tablet pequeno → moldura estreita
+   tablet       → moldura confortável, centralizada
+   computador   → moldura maior, centralizada no escuro
+   ═══════════════════════════════════════════════════ */
+.stage{
+  min-height:100vh;
+  min-height:100dvh;
+  display:grid;
+  /* minmax(0,1fr) e obrigatorio: com coluna automatica o grid mede pelo
+     conteudo mais largo (o letreiro) e a pagina transborda no celular */
+  grid-template-columns:minmax(0,1fr);
+  justify-items:center;
+  align-content:center;
+}
+
+/* ══ aparelho ════════════════════════════════════════ */
+.device{width:100%}
+
+/* a partir de tablet pequeno, o app ganha moldura.
+   O palco trava na altura da janela e a moldura se ajusta dentro dela —
+   assim nada transborda, em nenhuma proporção de tela. */
+@media(min-width:640px){
+  .stage{
+    min-height:100dvh;
+    overflow:hidden;
+    padding:clamp(16px,3vh,44px) clamp(16px,4vw,48px);
+  }
+  .device{
+    width:min(400px,100%);
+    /* o subtraendo é exatamente o dobro do padding vertical do palco,
+       para a moldura caber sem transbordar em qualquer altura de tela */
+    height:min(880px,calc(100dvh - clamp(32px,6vh,88px)));
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:42px;
+    padding:9px;
+    background:linear-gradient(160deg,#1A222A,#0E141A);
+    box-shadow:0 40px 80px -30px #000,0 0 0 1px #000 inset;
+  }
+}
+/* tablet em pé e telas médias */
+@media(min-width:900px){
+  .device{width:min(430px,100%)}
+}
+/* computador */
+@media(min-width:1280px){
+  .device{width:min(460px,100%)}
+}
+
+.app{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  height:100dvh;
+  background:var(--ground);
+  overflow:hidden;
+}
+@media(min-width:640px){
+  .app{height:auto;flex:1;min-width:0;border-radius:34px}
+}
+
+/* celular deitado: a tela fica baixa, então o app usa toda a altura */
+@media(max-height:560px) and (min-width:640px){
+  .stage{padding:0;height:100dvh}
+  .device{width:100%;height:100%;max-width:none;border:0;border-radius:0;padding:0;box-shadow:none;background:none}
+  .app{border-radius:0}
+}
+
+/* ── barra superior ── */
+.topbar{
+  flex:none;
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px 12px;
+  border-bottom:1px solid var(--line-soft);
+  background:var(--ground);
+  padding-top:max(14px,env(safe-area-inset-top));
+}
+.tb-mark{font-family:var(--serif);font-size:16px;color:var(--gold);letter-spacing:.03em;line-height:1}
+.tb-where{flex:1;min-width:0}
+.tb-where .t{font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-where .s{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.chip-demo{
+  font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--warn);border:1px solid #E4D3A6;background:#FBF5E6;
+  border-radius:99px;padding:3px 8px;white-space:nowrap;
+}
+.tb-bell{position:relative;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:var(--ink-2)}
+.tb-bell:hover{background:var(--surface-2);color:var(--gold)}
+.tb-bell .dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:99px;background:var(--gold)}
+
+/* ── área de conteúdo ── */
+.views{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.app,.device{max-width:100%}
+.topbar,.tabbar{min-width:0}
+
+/* telas muito estreitas: dobrável fechado, aparelho antigo */
+@media(max-width:340px){
+  .view{padding:16px 12px 26px}
+  .tab .lb{font-size:8.5px}
+  .tab svg{width:18px;height:18px}
+  h2.vt{font-size:23px}
+  .tile .v{font-size:25px}
+  .tiles.t3{grid-template-columns:1fr 1fr}
+  .quick{grid-template-columns:1fr 1fr}
+  .desks{grid-template-columns:repeat(4,1fr)}
+  .vagas{grid-template-columns:repeat(4,1fr)}
+}
+/* telas largas: a moldura não cresce mais, o app continua um app */
+@media(min-width:1700px){
+  .device{width:min(480px,100%)}
+}
+.view{display:none;padding:20px 16px 30px}
+.view.on{display:block}
+
+/* ── barra de abas ── */
+.tabbar{
+  flex:none;
+  display:grid;grid-template-columns:repeat(6,1fr);
+  border-top:1px solid var(--line);
+  background:var(--surface);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 1px 10px;color:var(--ink-3);min-width:0;
+  transition:color .15s;
+}
+.tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tab .lb{font-size:9.5px;letter-spacing:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--gold)}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]:hover{color:var(--gold-lt)}
+
+/* ══ blocos comuns ═══════════════════════════════════ */
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+h2.vt{font-family:var(--serif);font-weight:400;font-size:27px;line-height:1.12;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+h3.sec{
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:26px 0 11px;font-weight:400;
+  display:flex;align-items:baseline;gap:9px;
+}
+h3.sec::after{content:"";flex:1;border-top:1px solid var(--line-soft)}
+p.lede{color:var(--ink-2);font-size:14px;margin:0 0 16px;max-width:46ch}
+.src{font-family:var(--mono);font-size:10px;color:var(--ink-4);line-height:1.65;margin:11px 0 0}
+
+.panel{background:var(--surface);border:1px solid var(--line-soft);padding:16px}
+.note{border-left:2px solid var(--gold);padding:1px 0 1px 14px;margin:16px 0}
+.note.warn{border-color:var(--warn)}
+.note.bad{border-color:var(--neg)}
+.note.good{border-color:var(--pos)}
+.note .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+.note.warn .lbl{color:var(--warn)}
+.note.bad .lbl{color:var(--neg)}
+.note.good .lbl{color:var(--pos)}
+.note p{margin:0 0 7px;font-size:13px;color:var(--ink-2);line-height:1.55}
+.note p:last-child{margin:0}
+.note strong{color:var(--ink);font-weight:600}
+
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:99px;border:1px solid;white-space:nowrap;
+}
+.pill.ok{color:var(--pos);border-color:#B7D4C2;background:#EEF6F1}
+.pill.pend{color:var(--warn);border-color:#E4D3A6;background:#FBF5E6}
+.pill.no{color:var(--neg);border-color:#E8BFB9;background:#FBF0EE}
+.pill.info{color:var(--ink-3);border-color:var(--line)}
+.pill.gold{color:var(--gold);border-color:var(--gold-dkr);background:#FAF5E7}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px 16px;
+  background:var(--ink);color:#FBF9F4;
+  font-size:14.5px;font-weight:600;letter-spacing:.01em;
+  border-radius:2px;transition:background .15s;
+}
+.btn:hover{background:#2A323B}
+.btn:disabled{background:var(--surface-2);color:var(--ink-4);cursor:not-allowed}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--surface-2);border-color:var(--gold-dkr)}
+.btn.sm{padding:9px 14px;font-size:13px;width:auto}
+
+/* ── ladrilhos numéricos ── */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.tiles.t3{grid-template-columns:repeat(3,1fr)}
+.tile{background:var(--surface);padding:13px 14px}
+.tile .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px;line-height:1.4}
+.tile .v{font-family:var(--serif);font-size:29px;line-height:1;font-variant-numeric:tabular-nums}
+.tile .v.g{color:var(--gold)}
+.tile .v.p{color:var(--pos)}
+.tile .v.n{color:var(--neg)}
+.tile .v.sm{font-size:19px}
+.tile .u{font-size:11.5px;color:var(--ink-3);margin-top:6px;line-height:1.4}
+
+/* ── painel de notícias do dia ── */
+.ticker{
+  display:flex;align-items:stretch;width:100%;text-align:left;
+  border:1px solid var(--line-soft);background:var(--surface);
+  margin:0 0 20px;overflow:hidden;transition:border-color .15s;
+}
+.ticker:hover{border-color:var(--gold-dkr)}
+.ticker .tk-lb{
+  flex:none;display:grid;place-items:center;padding:0 11px;
+  background:var(--gold);color:#FFFFFF;
+  font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+}
+.ticker .tk-vp{
+  flex:1;min-width:0;overflow:hidden;padding:10px 0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+}
+.ticker .tk-run{display:flex;width:max-content;animation:roll 46s linear infinite}
+.ticker:hover .tk-run,.ticker:focus-visible .tk-run{animation-play-state:paused}
+@keyframes roll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk-i{display:flex;align-items:center;gap:8px;padding:0 15px;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.tk-i b{color:var(--ink);font-weight:600}
+.tk-i .dot{width:5px;height:5px;border-radius:99px;background:var(--gold);flex:none}
+.tk-i.warn .dot{background:var(--warn)}
+.tk-i.bad .dot{background:var(--neg)}
+.tk-i .sep{color:var(--gold-dkr);font-size:7px;margin-left:15px}
+@media (prefers-reduced-motion:reduce){
+  .ticker .tk-run{animation:none;flex-wrap:wrap;width:auto;gap:4px 0}
+  .ticker .tk-dup{display:none}
+  .ticker .tk-vp{-webkit-mask-image:none;mask-image:none;padding:10px 12px}
+  .tk-i{padding:0 10px 0 0;white-space:normal}
+  .tk-i .sep{display:none}
+}
+
+/* ── carnê diário ── */
+.carne{border:1px solid var(--line-soft);background:var(--surface);margin-top:14px}
+.carne .cr{
+  display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:9px 13px;border-bottom:1px solid var(--line-soft);
+}
+.carne .cr:last-child{border-bottom:0}
+.carne .cr .n{font-family:var(--mono);font-size:10px;color:var(--ink-4);font-variant-numeric:tabular-nums}
+.carne .cr .d{font-size:12.5px;color:var(--ink-2)}
+.carne .cr .v{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.carne .cr.hoje{background:var(--surface-2)}
+.carne .cr.hoje .d{color:var(--gold)}
+.carne .cr.mais{justify-content:center;color:var(--ink-4);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;grid-template-columns:1fr;text-align:center}
+
+/* ── atalhos ── */
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.qk{background:var(--surface);padding:15px 8px 13px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s}
+.qk:hover{background:var(--surface-2)}
+.qk svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.qk .lb{font-size:11px;color:var(--ink-2);text-align:center;line-height:1.25}
+
+/* ── linha do tempo de eventos ── */
+.feed-list{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.ev{background:var(--surface);padding:11px 14px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.ev .tm{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);padding-top:2px;font-variant-numeric:tabular-nums}
+.ev .tx{font-size:13px;color:var(--ink-2);line-height:1.45}
+.ev .tx b{color:var(--ink);font-weight:600}
+.ev .tx .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-4);margin-top:3px;letter-spacing:.03em}
+.ev.hi{background:var(--surface-2)}
+
+/* ══ câmeras ═════════════════════════════════════════ */
+.filters{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{
+  flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  padding:6px 11px;border:1px solid var(--line);color:var(--ink-3);border-radius:99px;transition:.15s;
+}
+.fchip:hover{color:var(--ink-2);border-color:var(--ink-4)}
+.fchip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#FFFFFF;font-weight:700}
+
+.wall{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.cam{position:relative;display:block;text-align:left;background:#070A0D;border:1px solid var(--line-soft);overflow:hidden;transition:border-color .15s}
+.cam:hover{border-color:var(--gold-dkr)}
+.cam .feed{position:relative;aspect-ratio:4/3;overflow:hidden;background:#0A0E12;border-bottom:1px solid var(--line-soft)}
+.cam .meta{padding:7px 8px 8px;border-top:1px solid var(--line-soft);background:var(--surface)}
+.cam .cid{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--gold-dk)}
+.cam .cnm{font-size:11.5px;color:var(--ink-2);line-height:1.3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* sobreposição do sinal */
+.ov{position:absolute;inset:0;pointer-events:none}
+.ov .rec{
+  position:absolute;top:6px;left:6px;display:flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#E8E3D8;text-shadow:0 1px 3px #000;
+}
+.ov .rec i{width:5px;height:5px;border-radius:99px;background:#EF5B4C;display:block;animation:blink 2s steps(1,end) infinite}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.15}}
+.ov .ts{
+  position:absolute;bottom:5px;right:6px;
+  font-family:var(--mono);font-size:8.5px;color:#E8E3D8;text-shadow:0 1px 3px #000;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+}
+.ov .scan{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);
+  mix-blend-mode:overlay;
+}
+.ov .grain{
+  position:absolute;inset:-60%;
+  background-image:var(--grain);
+  opacity:.06;
+  animation:grainmove 1.1s steps(4,end) infinite;
+}
+@keyframes grainmove{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(-6%,4%)}
+  50%{transform:translate(4%,-5%)}
+  75%{transform:translate(-3%,-3%)}
+  100%{transform:translate(0,0)}
+}
+.cam.off .feed{background:#0A0E12}
+.cam.off .ov .grain{opacity:.14;animation-duration:.5s}
+.nosig{
+  position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#EF8A80;
+}
+.nosig svg{width:17px;height:17px;stroke:#EF8A80;fill:none;stroke-width:1.4;stroke-linecap:round}
+
+/* cenas simuladas — desenhadas em canvas, quadro a quadro */
+.sc{position:absolute;inset:0;width:100%;height:100%;display:block}
+.deg{filter:contrast(.78) brightness(.9) saturate(.55)}
+
+/* faixa de atividade das últimas 24 h */
+.strip{display:flex;height:26px;border:1px solid var(--line-soft);background:var(--surface);overflow:hidden;margin-top:14px}
+.strip i{flex:1;display:block;background:var(--surface-2);border-right:1px solid rgba(0,0,0,.35)}
+.strip i:last-child{border-right:0}
+.strip i.a1{background:var(--gold-dkr)}
+.strip i.a2{background:var(--gold-dk)}
+.strip i.a3{background:var(--gold)}
+.strip i.gap{background:repeating-linear-gradient(135deg,#F3DAD6 0 3px,#E8C3BD 3px 6px)}
+.striplb{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--ink-4);margin-top:5px;letter-spacing:.05em}
+
+/* ══ segmentos ═══════════════════════════════════════ */
+.seg{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(80px,1fr);
+  gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 18px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.seg::-webkit-scrollbar{display:none}
+.sgb{background:var(--surface);padding:9px 6px;font-size:12.5px;color:var(--ink-3);transition:.15s;text-align:center;white-space:nowrap}
+.sgb:hover{color:var(--ink-2);background:var(--surface-2)}
+.sgb[aria-selected="true"]{background:var(--gold);color:#FFFFFF;font-weight:600}
+.pane{display:none}
+.pane.on{display:block}
+
+/* ── seletor de datas ── */
+.days{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 16px;padding:0 16px 4px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{
+  flex:none;width:54px;padding:8px 0 9px;text-align:center;
+  border:1px solid var(--line);background:var(--surface);transition:.15s;
+}
+.day:hover{border-color:var(--gold-dkr)}
+.day .dw{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.day .dn{font-family:var(--serif);font-size:20px;line-height:1.15;margin-top:3px;font-variant-numeric:tabular-nums}
+.day .dm{font-family:var(--mono);font-size:8.5px;color:var(--ink-4);letter-spacing:.06em}
+.day[aria-pressed="true"]{background:var(--gold);border-color:var(--gold)}
+.day[aria-pressed="true"] .dw,.day[aria-pressed="true"] .dn,.day[aria-pressed="true"] .dm{color:#FFFFFF}
+.day[aria-pressed="true"] .dw{font-weight:700}
+
+/* ── grade da lavanderia ── */
+.lav{overflow-x:auto;border:1px solid var(--line-soft);background:var(--surface)}
+.lgrid{border-collapse:collapse;width:100%;min-width:430px}
+.lgrid th{
+  font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:400;padding:8px 4px;background:var(--surface-2);
+  border-bottom:1px solid var(--line);position:sticky;left:0;
+}
+.lgrid thead th{position:static}
+.lgrid tbody th{
+  text-align:left;padding:0 9px;background:var(--surface-2);border-right:1px solid var(--line);
+  position:sticky;left:0;z-index:2;white-space:nowrap;
+}
+.lgrid td{padding:3px;border-bottom:1px solid var(--line-soft);text-align:center}
+.slot{
+  width:100%;min-width:46px;padding:8px 2px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-4);transition:.12s;
+}
+.slot.free{color:var(--ink-3);border-color:var(--line)}
+.slot.free:hover{border-color:var(--gold);color:var(--gold);background:var(--surface-2)}
+.slot.busy{background:var(--surface-2);color:var(--ink-4);border-color:var(--line-soft);cursor:not-allowed}
+.slot.mine{background:var(--gold);border-color:var(--gold);color:#FFFFFF;font-weight:700}
+.slot.dead{background:repeating-linear-gradient(135deg,var(--surface) 0 4px,var(--surface-2) 4px 8px);color:var(--ink-4);cursor:not-allowed;border-color:var(--line-soft)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0 0;font-size:11.5px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;flex:none;border:1px solid var(--line)}
+.sw.free{background:var(--surface)}
+.sw.busy{background:var(--surface-2)}
+.sw.mine{background:var(--gold);border-color:var(--gold)}
+.sw.dead{background:repeating-linear-gradient(135deg,var(--surface) 0 4px,var(--surface-2) 4px 8px)}
+
+/* ── cartões de área ── */
+.areas{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.area{background:var(--surface);padding:14px}
+.area .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.area .nm{font-size:14.5px;font-weight:600;line-height:1.25}
+.area .ds{font-size:12.5px;color:var(--ink-3);margin-top:5px;line-height:1.45}
+.area .ft{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:11px}
+.area .cap{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+
+/* ── turnos ── */
+.turnos{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.turno{
+  background:var(--surface);padding:13px 14px;
+  display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;text-align:left;transition:.15s;
+}
+.turno:hover:not(:disabled){background:var(--surface-2)}
+.turno[aria-pressed="true"]{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--gold)}
+.turno[aria-pressed="true"] .tn{color:var(--gold)}
+.turno:disabled{cursor:not-allowed;opacity:.55}
+.turno .tn{font-size:14px;font-weight:600}
+.turno .th{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:3px;letter-spacing:.04em}
+
+/* ── produtos ── */
+.prods{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.prod{background:var(--surface);padding:15px 14px;text-align:left;transition:.15s;display:block;width:100%}
+.prod:hover{background:var(--surface-2)}
+.prod[aria-pressed="true"]{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--gold)}
+.prod .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.prod .nm{font-family:var(--serif);font-size:19px;line-height:1.1}
+.prod[aria-pressed="true"] .nm{color:var(--gold)}
+.prod .pr{font-family:var(--serif);font-size:20px;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.prod .pr small{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);display:block;text-align:right;letter-spacing:.05em;margin-top:2px}
+.prod .ds{font-size:12.5px;color:var(--ink-3);margin-top:7px;line-height:1.45}
+.prod .av{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-4);margin-top:8px;text-transform:uppercase}
+
+/* ── campos ── */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.fld{background:var(--surface);padding:11px 13px}
+.fld label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.fld input,.fld select{
+  width:100%;background:none;border:0;color:var(--ink);font-family:var(--sans);font-size:14.5px;padding:0;
+}
+.fld input[type="date"]{font-family:var(--mono);font-size:13px}
+.fld select{cursor:pointer}
+.fld select option{background:var(--surface-2);color:var(--ink)}
+.fld input::placeholder{color:var(--ink-4)}
+.fld.wide{grid-column:1 / -1}
+.turno .ar{color:var(--ink-4);font-family:var(--mono);font-size:13px}
+
+/* ── conta ── */
+.bill{border:1px solid var(--line-soft);background:var(--surface);margin-top:16px}
+.bill .row{display:flex;justify-content:space-between;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--ink-2)}
+.bill .row:last-child{border-bottom:0}
+.bill .row .v{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.bill .row.calc{color:var(--ink-3);font-size:12px}
+.bill .row.calc .v{font-size:11.5px;color:var(--ink-3)}
+.bill .row.tot{background:var(--surface-2);border-top:1px solid var(--line)}
+.bill .row.tot span{color:var(--ink);font-weight:600;font-size:14px}
+.bill .row.tot .v{color:var(--gold);font-family:var(--serif);font-size:20px}
+
+/* ── lista de menu ── */
+.menu{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.mi{
+  background:var(--surface);padding:14px;width:100%;text-align:left;
+  display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:center;transition:.15s;
+}
+.mi:hover{background:var(--surface-2)}
+.mi svg.ic{width:19px;height:19px;stroke:var(--gold);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.mi .nm{font-size:14px;color:var(--ink)}
+.mi .ds{font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.mi .ar{color:var(--ink-4);font-family:var(--mono);font-size:13px}
+
+/* ── minhas reservas ── */
+.myres{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.mr{background:var(--surface);padding:13px 14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.mr .nm{font-size:13.5px;font-weight:600}
+.mr .ds{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:4px;letter-spacing:.03em}
+.mr .cancel{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);padding:5px 9px;border-radius:99px;transition:.15s}
+.mr .cancel:hover{color:var(--neg);border-color:#E8BFB9;background:#FBF0EE}
+.empty{border:1px dashed var(--line);padding:22px 16px;text-align:center;font-size:13px;color:var(--ink-4)}
+
+/* ── barra de ocupação ── */
+.bars{display:flex;flex-direction:column;gap:11px;margin-top:4px}
+.bar .bt{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+.bar .bt .v{font-family:var(--mono);font-size:11.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar .track{height:6px;background:var(--surface-2);overflow:hidden}
+.bar .fill{height:100%;background:var(--gold)}
+.bar .fill.d2{background:var(--gold-dk)}
+.bar .fill.d3{background:var(--gold-dkr)}
+
+/* ── grade de horários com lotação (academia) ── */
+.hours{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.hr{
+  background:var(--surface);padding:11px 13px;width:100%;text-align:left;
+  display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;transition:.15s;
+}
+.hr:hover:not(:disabled){background:var(--surface-2)}
+.hr:disabled{cursor:not-allowed;opacity:.5}
+.hr[aria-pressed="true"]{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--gold)}
+.hr .h{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.hr[aria-pressed="true"] .h{color:var(--gold)}
+.hr .track{height:5px;background:var(--surface-3);overflow:hidden}
+.hr .fill{height:100%;background:var(--gold-dk)}
+.hr .fill.full{background:var(--neg)}
+.hr .fill.mine{background:var(--gold)}
+.hr .cnt{font-family:var(--mono);font-size:10px;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ── estações do coworking ── */
+.desks{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.desk{
+  aspect-ratio:1;display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-3);transition:.12s;
+}
+.desk:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.desk.busy{background:var(--surface-2);color:var(--ink-4);border-color:var(--line-soft);cursor:not-allowed}
+.desk.mine{background:var(--gold);border-color:var(--gold);color:#FFFFFF;font-weight:700}
+
+/* ── mapa de vagas ── */
+.vagas{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.vaga{
+  padding:11px 3px 9px;text-align:center;
+  border:1px solid var(--line);background:var(--surface);transition:.12s;
+}
+.vaga:hover:not(:disabled){border-color:var(--gold)}
+.vaga .vn{font-family:var(--mono);font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.vaga .vs{font-family:var(--mono);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);margin-top:5px}
+.vaga.busy{background:var(--surface-2);cursor:not-allowed}
+.vaga.busy .vn{color:var(--ink-4)}
+.vaga.mine{background:var(--gold);border-color:var(--gold)}
+.vaga.mine .vn,.vaga.mine .vs{color:#FFFFFF}
+.vaga.mine .vn{font-weight:700}
+.lane{
+  grid-column:1 / -1;height:22px;margin:1px 0;
+  background:repeating-linear-gradient(90deg,var(--line) 0 12px,transparent 12px 26px);
+  opacity:.5;
+}
+
+/* ── cartões de serviço ── */
+.svcs{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.svc{background:var(--surface);padding:14px;width:100%;text-align:left;display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:start;transition:.15s}
+.svc:hover{background:var(--surface-2)}
+.svc svg.ic{width:19px;height:19px;stroke:var(--gold);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;margin-top:2px}
+.svc .nm{font-size:14px;font-weight:600;line-height:1.25}
+.svc .ds{font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.45}
+.svc .tag{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;margin-top:7px;display:inline-block}
+.svc .tag.terc{color:var(--pos)}
+.svc .tag.casa{color:var(--warn)}
+.svc .ar{color:var(--ink-4);font-family:var(--mono);font-size:13px;align-self:center}
+
+/* ── carteira ── */
+.wallet{border:1px solid var(--line-soft);background:var(--surface)}
+.wallet .wr{display:grid;grid-template-columns:1fr auto;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line-soft)}
+.wallet .wr:last-child{border-bottom:0}
+.wallet .wr .nm{font-size:13px;color:var(--ink-2)}
+.wallet .wr .sb{font-family:var(--mono);font-size:10px;color:var(--ink-4);margin-top:3px;letter-spacing:.03em}
+.wallet .wr .v{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums;align-self:center;white-space:nowrap}
+.wallet .wr .v.zero{color:var(--ink-4)}
+
+/* ── código de visitante ── */
+.code{
+  border:1px solid var(--gold-dkr);background:var(--surface);
+  padding:20px 16px;text-align:center;margin:16px 0;
+}
+.code .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:11px}
+.code .v{font-family:var(--mono);font-size:29px;letter-spacing:.16em;color:var(--gold);font-variant-numeric:tabular-nums}
+.code .u{font-size:12px;color:var(--ink-3);margin-top:11px;line-height:1.5}
+
+/* ── grade de produtos das máquinas ── */
+.vend{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+.vi{background:var(--surface);padding:11px 13px}
+.vi .nm{font-size:12.5px;color:var(--ink-2)}
+.vi .pr{font-family:var(--mono);font-size:11px;color:var(--ink-4);margin-top:4px;letter-spacing:.04em}
+
+/* ══ folha modal ═════════════════════════════════════ */
+.scrim{
+  position:absolute;inset:0;z-index:60;
+  background:rgba(6,9,12,.72);
+  display:none;align-items:flex-end;
+  animation:fade .18s ease-out;
+}
+.scrim.on{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:100%;max-height:92%;overflow-y:auto;
+  background:var(--ground);border-top:1px solid var(--line);
+  animation:rise .22s cubic-bezier(.22,.75,.3,1);
+}
+@media(min-width:640px){.sheet{border-radius:0 0 34px 34px}}
+@media(max-height:560px) and (min-width:640px){.sheet{border-radius:0}}
+@keyframes rise{from{transform:translateY(14%)}to{transform:translateY(0)}}
+.sheet .sh{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:16px 16px 12px;border-bottom:1px solid var(--line-soft);position:sticky;top:0;background:var(--ground);z-index:2;
+}
+.sheet .sh h4{font-family:var(--serif);font-weight:400;font-size:21px;line-height:1.15;margin:0}
+.sheet .sh .sub{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:5px}
+.sheet .x{width:30px;height:30px;flex:none;display:grid;place-items:center;border:1px solid var(--line);color:var(--ink-3);font-size:15px;line-height:1}
+.sheet .x:hover{color:var(--gold);border-color:var(--gold-dkr)}
+.sheet .sb{padding:16px}
+
+/* câmera expandida */
+.bigfeed{position:relative;aspect-ratio:4/3;background:#070A0D;overflow:hidden;border:1px solid var(--line-soft)}
+.bigfeed .ov .rec{font-size:10px;top:9px;left:9px}
+.bigfeed .ov .rec i{width:6px;height:6px}
+.bigfeed .ov .ts{font-size:11px;bottom:8px;right:10px}
+.camstats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:14px}
+.camstats .cs{background:var(--surface);padding:10px 12px}
+.camstats .cs .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.camstats .cs .v{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+
+/* ── torrada ── */
+.toast{
+  position:absolute;left:14px;right:14px;bottom:78px;z-index:80;
+  background:var(--surface-2);border:1px solid var(--line);border-left:2px solid var(--gold);
+  padding:12px 14px;font-size:13px;color:var(--ink);
+  transform:translateY(16px);opacity:0;pointer-events:none;transition:.22s ease-out;
+}
+.toast.on{transform:translateY(0);opacity:1}
+.toast .sb{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:4px;letter-spacing:.04em}
+.toast.good{border-left-color:var(--pos)}
+.toast.bad{border-left-color:var(--neg)}
+
+.footnote{
+  margin-top:26px;padding-top:14px;border-top:1px solid var(--line-soft);
+  font-family:var(--mono);font-size:9.5px;line-height:1.75;color:var(--ink-4);
+}
+</style>
+
+<div class="stage">
+
+  <div class="device">
+    <div class="app">
+
+      <header class="topbar">
+        <span class="tb-mark">M7M</span>
+        <div class="tb-where">
+          <div class="t">Villa Universitária</div>
+          <div class="s">Pedro Juan Caballero</div>
+        </div>
+        <span class="chip-demo">Demo</span>
+        <button class="tb-bell" id="bell" aria-label="Avisos">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+          <span class="dot"></span>
+        </button>
+      </header>
+
+      <div class="views" id="views">
+
+        <!-- ══ INÍCIO ══ -->
+        <section class="view on" data-view="inicio" id="v-inicio">
+          <button class="ticker" id="ticker" type="button" aria-label="Boletim do dia — abrir">
+            <span class="tk-lb">Hoje</span>
+            <span class="tk-vp"><span class="tk-run" id="tickerRun"></span></span>
+          </button>
+
+          <p class="eyebrow">Painel do condomínio</p>
+          <h2 class="vt">Bom dia, Marcus.</h2>
+          <p class="lede">Tudo o que a Villa faz num dia, em uma tela — vigilância, reservas, serviços e ocupação.</p>
+
+          <div class="tiles t3" id="homeTiles"></div>
+
+          <h3 class="sec">Atalhos</h3>
+          <div class="quick" id="quick"></div>
+
+          <h3 class="sec">Agora no condomínio</h3>
+          <div class="feed-list" id="eventFeed"></div>
+          <p class="src">Fluxo de demonstração. Numa operação real, cada linha vem do controle de acesso, do CFTV e do módulo de reservas.</p>
+
+          <h3 class="sec">Minhas reservas</h3>
+          <div id="homeRes"></div>
+
+          <div class="note warn" style="margin-top:24px">
+            <span class="lbl">O que esta demonstração é</span>
+            <p>Um aplicativo funcional com dados do projeto: as reservas que você fizer aqui ficam salvas neste aparelho. <strong>As imagens de câmera são simuladas pelo navegador</strong> — o circuito de CFTV ainda não foi especificado nem orçado.</p>
+          </div>
+
+          <p class="footnote">Inventário do quantitativo oficial de 10/08/2026. Preços de moradia decididos em 10/08/2026. Receita modelada a 100% de ocupação, não realizada.</p>
+        </section>
+
+        <!-- ══ CÂMERAS ══ -->
+        <section class="view" data-view="cameras" id="v-cameras">
+          <p class="eyebrow">Vigilância · 24 pontos</p>
+          <h2 class="vt">Mural de câmeras</h2>
+          <p class="lede" id="camSummary">—</p>
+
+          <div class="tiles t3" id="camTiles" style="margin-bottom:14px"></div>
+          <div class="filters" id="camFilters"></div>
+          <div class="wall" id="camWall"></div>
+
+          <div class="note warn" style="margin-top:20px">
+            <span class="lbl">A conta que ninguém tinha feito</span>
+            <p id="camArmazena">—</p>
+            <p>Nenhum desses números está em qualquer planilha de custo da M7M. <strong>Gravador, disco, licença por canal e link dedicado</strong> entram no pedido de cotação da Etapa 1.</p>
+          </div>
+
+          <div class="note bad" style="margin-top:16px">
+            <span class="lbl">Dito antes que perguntem</span>
+            <p>Estas imagens são desenhadas pelo navegador, quadro a quadro. <strong>Não existe câmera instalada e o sistema não foi orçado</strong>. A especificação acima é premissa de dimensionamento, não cotação.</p>
+            <p>Os 24 pontos e as 7 zonas seguem a planta do quantitativo oficial: 8 apartamentos no térreo, 8 no primeiro andar, 3 duplex e 10 vagas.</p>
+          </div>
+
+          <p class="footnote">Uma câmera aparece sem sinal e outra com qualidade degradada de propósito: o aplicativo precisa mostrar a falha, não escondê-la.</p>
+        </section>
+
+        <!-- ══ RESERVAS ══ -->
+        <section class="view" data-view="reservas" id="v-reservas">
+          <p class="eyebrow">Áreas comuns</p>
+          <h2 class="vt">Reservas</h2>
+
+          <div class="seg" role="tablist" aria-label="Tipo de reserva">
+            <button class="sgb" role="tab" aria-selected="true" data-pane="lazer">Lazer</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="lavanderia">Lavanderia</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="academia">Academia</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="coworking">Coworking</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="gourmet">Gourmet</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="garagem">Garagem</button>
+          </div>
+
+          <!-- lazer -->
+          <div class="pane on" data-pane="lazer">
+            <p class="lede">O que existe hoje no quantitativo, e o que ainda é conceito. A separação é proposital.</p>
+            <div class="areas" id="areaList"></div>
+            <p class="src">Marcado como oficial o que consta no quantitativo de 10/08/2026 e na extração do modelo BIM. O restante é conceito do briefing, ainda sem confirmação em projeto.</p>
+          </div>
+
+          <!-- lavanderia -->
+          <div class="pane" data-pane="lavanderia">
+            <p class="lede">8 lavadoras coletivas, blocos de 1h30, das 07h às 22h.</p>
+            <div class="days" id="lavDays"></div>
+            <div class="lav"><table class="lgrid" id="lavGrid"></table></div>
+            <div class="legend">
+              <span><i class="sw free"></i>Livre</span>
+              <span><i class="sw busy"></i>Ocupado</span>
+              <span><i class="sw mine"></i>Minha reserva</span>
+              <span><i class="sw dead"></i>Manutenção</span>
+            </div>
+            <div class="note" style="margin-top:18px">
+              <span class="lbl">Por que 8 lavadoras importam ao investidor</span>
+              <p>A lavanderia é a camada 2 da tese: com máquina do condomínio ela é custo; <strong>arrendada a um operador, vira aluguel de terceiro</strong> e sai da folha. O aplicativo funciona nos dois modelos — muda quem recebe.</p>
+            </div>
+            <p class="src">8 lavadoras coletivas confirmadas na extração do modelo BIM de 10/08/2026. A grade de horários e a política de uso ainda não foram decididas: os blocos aqui são hipótese de operação.</p>
+          </div>
+
+          <!-- academia -->
+          <div class="pane" data-pane="academia">
+            <p class="lede">Blocos de 1 hora, das 06h às 22h, até 8 pessoas por horário.</p>
+            <div class="note bad">
+              <span class="lbl">Leia antes de reservar</span>
+              <p><strong>A academia não consta no quantitativo de 10/08/2026 nem no modelo BIM.</strong> Esta tela existe porque o aplicativo precisa suportá-la se ela entrar no projeto — não porque o espaço exista. Área, equipamento e custo ainda não foram definidos.</p>
+            </div>
+            <div class="days" id="acaDays"></div>
+            <div class="hours" id="acaHours"></div>
+            <p class="src">Lotação de 8 pessoas é hipótese de operação, não dimensionamento de projeto.</p>
+          </div>
+
+          <!-- coworking -->
+          <div class="pane" data-pane="coworking">
+            <p class="lede">18 estações de estudo. Já está no preço-base de todas as tipologias.</p>
+            <div class="days" id="cowDays"></div>
+            <h3 class="sec">Turno</h3>
+            <div class="turnos" id="cowTurnos"></div>
+            <h3 class="sec">Estação</h3>
+            <div class="desks" id="cowDesks"></div>
+            <div class="legend">
+              <span><i class="sw free"></i>Livre</span>
+              <span><i class="sw busy"></i>Ocupada</span>
+              <span><i class="sw mine"></i>Sua estação</span>
+            </div>
+            <div class="note" style="margin-top:18px">
+              <span class="lbl">Por que reservar mesa num prédio de estudantes</span>
+              <p>Em época de prova o coworking lota e vira reclamação. Reserva resolve com uma tela — e produz o dado que diz se 18 estações bastam para 23 leitos. <strong>Hoje ninguém sabe se bastam.</strong></p>
+            </div>
+            <p class="src">18 estações é o número declarado no conceito. O quantitativo oficial confirma a existência do coworking, não a quantidade de postos.</p>
+          </div>
+
+          <!-- garagem -->
+          <div class="pane" data-pane="garagem">
+            <p class="lede">10 vagas cobertas. Livres podem ser usadas por hóspede ou visitante do dia.</p>
+            <div class="days" id="garDays"></div>
+            <div class="vagas" id="garMapa"></div>
+            <div class="legend">
+              <span><i class="sw free"></i>Livre</span>
+              <span><i class="sw busy"></i>Ocupada</span>
+              <span><i class="sw mine"></i>Sua vaga</span>
+            </div>
+            <div class="note warn" style="margin-top:18px">
+              <span class="lbl">Risco declarado</span>
+              <p>São 10 vagas para 19 apartamentos e 23 leitos. <strong>O número de vagas exigido por lei ainda não foi conferido contra o projeto</strong> — se a exigência for maior, ou o programa perde unidade, ou a vaga vira produto pago à parte. As duas saídas mexem na receita.</p>
+            </div>
+            <p class="src">10 vagas confirmadas na extração do modelo BIM de 10/08/2026. Preço de vaga avulsa não decidido.</p>
+          </div>
+
+          <!-- gourmet -->
+          <div class="pane" data-pane="gourmet">
+            <p class="lede">Espaço gourmet, até 24 pessoas, um turno por reserva.</p>
+            <div class="days" id="gouDays"></div>
+            <h3 class="sec">Turno</h3>
+            <div class="turnos" id="gouTurnos"></div>
+            <div class="fields" style="margin-top:16px">
+              <div class="fld wide">
+                <label for="gouQtd">Quantas pessoas</label>
+                <select id="gouQtd"></select>
+              </div>
+            </div>
+            <div class="bill" id="gouBill"></div>
+            <button class="btn" id="gouGo" style="margin-top:16px">Reservar o espaço</button>
+            <div class="note warn" style="margin-top:18px">
+              <span class="lbl">Decisão pendente</span>
+              <p>Não existe taxa de limpeza definida para o espaço gourmet, então o aplicativo não cobra nenhuma. <strong>Colocar um valor aqui seria inventar número</strong> — a taxa entra depois de cotar limpeza e enxoval, na Etapa 1.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══ ESTADIA ══ -->
+        <section class="view" data-view="estadia" id="v-estadia">
+          <p class="eyebrow">Reserva de unidade</p>
+          <h2 class="vt">Estadia</h2>
+
+          <div class="seg" role="tablist" aria-label="Tipo de estadia">
+            <button class="sgb" role="tab" aria-selected="true" data-pane="temporada">Temporada</button>
+            <button class="sgb" role="tab" aria-selected="false" data-pane="moradia">Moradia</button>
+          </div>
+
+          <!-- temporada -->
+          <div class="pane on" data-pane="temporada">
+            <p class="lede">Apart-hotel por diária, fora do período letivo ou nas vagas que sobram.</p>
+            <div class="prods" id="tmpProds"></div>
+            <div class="fields" style="margin-top:16px">
+              <div class="fld"><label for="tin">Entrada</label><input type="date" id="tin"></div>
+              <div class="fld"><label for="tout">Saída</label><input type="date" id="tout"></div>
+              <div class="fld wide"><label for="thos">Hóspedes</label><select id="thos"></select></div>
+            </div>
+            <div class="bill" id="tmpBill"></div>
+            <button class="btn" id="tmpGo" style="margin-top:16px">Solicitar reserva</button>
+            <div class="note warn" style="margin-top:18px">
+              <span class="lbl">De onde sai a diária</span>
+              <p>Não existe tarifa de diária decidida. O aplicativo calcula à vista: <strong>preço mensal ÷ 30 × 1,9</strong>, com o fator de curta estadia declarado na conta acima. É um valor derivado, não uma tabela aprovada.</p>
+            </div>
+          </div>
+
+          <!-- moradia -->
+          <div class="pane" data-pane="moradia">
+            <p class="lede">Contrato do ano letivo. É a camada que responde por 100% da receita modelada.</p>
+            <div class="prods" id="morProds"></div>
+            <h3 class="sec">Plano</h3>
+            <div class="turnos" id="morPlanos"></div>
+            <div class="bill" id="morBill"></div>
+            <button class="btn" id="morGo" style="margin-top:16px">Reservar a unidade</button>
+
+            <h3 class="sec">Já incluso no preço</h3>
+            <div class="areas" id="incList"></div>
+            <div class="note bad" style="margin-top:18px">
+              <span class="lbl">Risco de margem declarado</span>
+              <p>A energia está <strong>dentro</strong> do preço, com franquia de Gs. 100.000 por unidade/mês — R$ 85,69, ou 149 kWh na ponta. Sem medidor individual, a franquia é uma palavra no contrato, não um limite. Exposição estimada entre 4,5% e 8,9% do resultado operacional.</p>
+            </div>
+            <p class="src">Preços decididos em 10/08/2026. Ticket médio R$ 2.746; receita por leito R$ 2.269. Receita contratada a 100% de ocupação: R$ 52.181/mês.</p>
+          </div>
+        </section>
+
+        <!-- ══ SERVIÇOS ══ -->
+        <section class="view" data-view="servicos" id="v-servicos">
+          <p class="eyebrow">Camada 2 da tese</p>
+          <h2 class="vt">Serviços</h2>
+          <p class="lede">O que converte aluguel em assinatura. Sete serviços operando pelo aplicativo — e R$ 0 de receita modelada em todos eles.</p>
+
+          <div class="tiles t3" style="margin-bottom:6px">
+            <div class="tile"><div class="k">Serviços no app</div><div class="v g">7</div><div class="u">todos funcionais aqui</div></div>
+            <div class="tile"><div class="k">Receita modelada</div><div class="v n">0</div><div class="u">R$ · nenhum contrato</div></div>
+            <div class="tile"><div class="k">Já cotados</div><div class="v n">0</div><div class="u">de 7</div></div>
+          </div>
+
+          <div class="svcs" id="svcList"></div>
+
+          <div class="note bad" style="margin-top:20px">
+            <span class="lbl">Por que esta aba deixou de ser acessório</span>
+            <p>O custo fixo real da operação é <strong>R$ 31.800/mês</strong>, 83,6% da receita efetiva. Para o projeto render 12% ao ano, ele precisa caber em <strong>R$ 20.237/mês</strong>. São R$ 11.563 que têm de sair de algum lugar.</p>
+            <p><strong>Cada serviço que passa para terceiro sai desses R$ 31.800.</strong> Operação enxuta com terceiros não é mais mitigação opcional — virou condição do retorno.</p>
+          </div>
+
+          <div class="note" style="margin-top:16px">
+            <span class="lbl">Quem opera decide se é receita ou despesa</span>
+            <p><strong style="color:var(--pos)">Terceiro</strong> — limpeza, máquinas, impressão e notebooks arrendados saem da folha e viram aluguel. <strong style="color:var(--warn)">Casa</strong> — operados pela M7M, entram como custo e exigem equipe.</p>
+            <p>O aplicativo é o mesmo nos dois modelos. Muda quem recebe — e é uma decisão da Etapa 1, não uma decisão de software.</p>
+          </div>
+
+          <div class="note bad" style="margin-top:16px">
+            <span class="lbl">A regra que me imponho</span>
+            <p>Nenhum destes serviços tem preço nesta tela, porque nenhum foi cotado. <strong>Colocar um número aqui contaminaria os números que têm fonte</strong> — e são esses que sustentam a apresentação.</p>
+          </div>
+
+          <p class="footnote">Camada 2 da tese das quatro camadas. Hoje 100% da receita modelada está na camada 1, moradia. Fechar as cotações desta tela é entregável da Etapa 1.</p>
+        </section>
+
+        <!-- ══ MAIS ══ -->
+        <section class="view" data-view="mais" id="v-mais">
+          <p class="eyebrow">Morador e gestão</p>
+          <h2 class="vt">Mais</h2>
+          <p class="lede">O resto do que o aplicativo faz — e o painel que o investidor abre.</p>
+          <div class="menu" id="menuList"></div>
+
+          <h3 class="sec">Sobre esta demonstração</h3>
+          <div class="panel">
+            <p style="margin:0 0 10px;font-size:13px;color:var(--ink-2);line-height:1.55">Construída sobre a apresentação <strong style="color:var(--ink)">Villa Universitária M7M — Etapa 1</strong>, de 10 de agosto de 2026. Todo número de inventário e de preço vem de lá; nada foi acrescentado sem fonte.</p>
+            <p style="margin:0;font-size:13px;color:var(--ink-2);line-height:1.55">O que o aplicativo <em style="color:var(--gold-lt);font-style:normal">não</em> tem: tarifa de diária aprovada, taxa de área comum, orçamento de CFTV, integração com fechadura e meio de pagamento. Todos são entregáveis da Etapa 1.</p>
+          </div>
+          <p class="footnote">Reservas ficam salvas apenas neste aparelho. Nenhum dado sai daqui.</p>
+        </section>
+
+      </div>
+
+      <nav class="tabbar" role="tablist" aria-label="Seções">
+        <button class="tab" role="tab" aria-selected="true" data-go="inicio">
+          <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg>
+          <span class="lb">Início</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-go="cameras">
+          <svg viewBox="0 0 24 24"><path d="M2.5 6.5 17 3.2l1.4 5.2L3.9 11.7z"></path><path d="M3.9 11.7 5 16.5"></path><path d="M9.5 10.3 8.6 6.6"></path><path d="M18.4 8.4 22 6.9v6.6l-3.1-1.3"></path><circle cx="8" cy="19.5" r="1.6"></circle><path d="M9.6 19.5h7.9"></path></svg>
+          <span class="lb">Câmeras</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-go="reservas">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="1.5"></rect><path d="M3 9.5h18"></path><path d="M8 2.5v4"></path><path d="M16 2.5v4"></path><path d="M7.5 13.5h3v3h-3z"></path></svg>
+          <span class="lb">Reservas</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-go="servicos">
+          <svg viewBox="0 0 24 24"><path d="M14.5 5.5a4 4 0 0 0 5.2 5.2l-8 8a2.6 2.6 0 0 1-3.7-3.7z"></path><path d="M6.5 17.5h.01"></path><path d="M4.5 8.5 8 5l2.5 2.5"></path><path d="M8 5v6"></path></svg>
+          <span class="lb">Serviços</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-go="estadia">
+          <svg viewBox="0 0 24 24"><path d="M3 20.5V6.5a1.5 1.5 0 0 1 1.5-1.5H12v15.5"></path><path d="M12 20.5V10h7.5a1.5 1.5 0 0 1 1.5 1.5v9"></path><path d="M2 20.5h20"></path><path d="M6.5 9h2"></path><path d="M6.5 13h2"></path><path d="M15.5 14h2"></path></svg>
+          <span class="lb">Estadia</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-go="mais">
+          <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"></circle><circle cx="12" cy="12" r="1.4"></circle><circle cx="19" cy="12" r="1.4"></circle></svg>
+          <span class="lb">Mais</span>
+        </button>
+      </nav>
+
+      <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+        <div class="sheet" id="sheet">
+          <div class="sh">
+            <div>
+              <h4 id="shTitle">—</h4>
+              <div class="sub" id="shSub"></div>
+            </div>
+            <button class="x" id="shClose" aria-label="Fechar">✕</button>
+          </div>
+          <div class="sb" id="shBody"></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ══════════════════════════════════════════════════════
+   DADOS — todos com origem declarada
+   Quantitativo oficial 10/08/2026 · preços 10/08/2026
+   ══════════════════════════════════════════════════════ */
+
+var INVENTARIO = {
+  apartamentos:19, leitos:23, terreo:8, primeiro:8, duplex:3,
+  vagas:10, lavadoras:8, vending:3, arvores:14,
+  areaTipo:27.24, areaSomada:567, receita:52181, ticket:2746, porLeito:2269
+};
+
+var PRODUTOS = [
+  {id:'smart', nome:'M7M Smart', tip:'1 quarto', preco:2599, un:14, quartos:1,
+   ds:'27,24 m², mobiliado, cozinha equipada e espaço de estudos. É 69,7% da receita.'},
+  {id:'plus', nome:'M7M Plus', tip:'2 quartos', preco:2799, un:2, quartos:2,
+   ds:'Dois quartos. Dividido, sai a R$ 1.400 por morador — 46% abaixo do Smart.'},
+  {id:'signature', nome:'M7M Signature', tip:'Duplex', preco:3399, un:3, quartos:2,
+   ds:'Ocupa os dois pavimentos, banheiro em cada um. Três unidades no prédio.'}
+];
+
+var FATOR_DIARIA = 1.9;
+
+var ZONAS = ['Todas','Acessos','Perímetro','Estacionamento','Térreo','1º andar','Convivência','Serviços'];
+
+var CAMS = [
+  {id:'C01', nm:'Portaria principal',      z:'Acessos',        sc:'ext', st:'on'},
+  {id:'C02', nm:'Cancela veicular',        z:'Acessos',        sc:'gar', st:'on'},
+  {id:'C03', nm:'Hall de entrada',         z:'Acessos',        sc:'sal', st:'on'},
+  {id:'C04', nm:'Portão de pedestres',     z:'Acessos',        sc:'ext', st:'on'},
+  {id:'C05', nm:'Fachada · via principal', z:'Perímetro',      sc:'ext', st:'on'},
+  {id:'C06', nm:'Lateral norte',           z:'Perímetro',      sc:'ext', st:'on'},
+  {id:'C07', nm:'Lateral sul',             z:'Perímetro',      sc:'ext', st:'on'},
+  {id:'C08', nm:'Fundos · lote reserva',   z:'Perímetro',      sc:'ext', st:'deg'},
+  {id:'C09', nm:'Vagas 01–05',             z:'Estacionamento', sc:'gar', st:'on'},
+  {id:'C10', nm:'Vagas 06–10',             z:'Estacionamento', sc:'gar', st:'on'},
+  {id:'C11', nm:'Rampa de acesso',         z:'Estacionamento', sc:'gar', st:'on'},
+  {id:'C12', nm:'Corredor térreo A',       z:'Térreo',         sc:'cor', st:'on'},
+  {id:'C13', nm:'Corredor térreo B',       z:'Térreo',         sc:'cor', st:'on'},
+  {id:'C14', nm:'Escada do térreo',        z:'Térreo',         sc:'cor', st:'on'},
+  {id:'C15', nm:'Hall dos aptos 01–08',    z:'Térreo',         sc:'sal', st:'on'},
+  {id:'C16', nm:'Corredor 1º andar A',     z:'1º andar',       sc:'cor', st:'on'},
+  {id:'C17', nm:'Corredor 1º andar B',     z:'1º andar',       sc:'cor', st:'off'},
+  {id:'C18', nm:'Escada do 1º andar',      z:'1º andar',       sc:'cor', st:'on'},
+  {id:'C19', nm:'Coworking',               z:'Convivência',    sc:'sal', st:'on'},
+  {id:'C20', nm:'Espaço gourmet',          z:'Convivência',    sc:'sal', st:'on'},
+  {id:'C21', nm:'Deck de convivência',     z:'Convivência',    sc:'ext', st:'on'},
+  {id:'C22', nm:'Lavanderia coletiva',     z:'Serviços',       sc:'srv', st:'on'},
+  {id:'C23', nm:'Lockers de encomenda',    z:'Serviços',       sc:'srv', st:'on'},
+  {id:'C24', nm:'Vending · máquinas',      z:'Serviços',       sc:'srv', st:'on'}
+];
+
+/* Especificação assumida para dimensionar banda e armazenamento.
+   NÃO é cotação — é a conta que precisa ser feita antes de pedir uma. */
+var CAM_SPEC = {
+  resOk:'1920×1080', resDeg:'1280×720',
+  fpsOk:15, fpsDeg:10,
+  mbpsOk:3.8, mbpsDeg:1.4,
+  codec:'H.265', retencaoDias:30
+};
+
+function bandaTotalMbps(){
+  var m = 0;
+  CAMS.forEach(function(c){
+    if(c.st === 'on') m += CAM_SPEC.mbpsOk;
+    else if(c.st === 'deg') m += CAM_SPEC.mbpsDeg;
+  });
+  return m;
+}
+/* GB por dia = Mbps × 86400 s ÷ 8 bits ÷ 1000 */
+function armazenaDiaGB(){ return bandaTotalMbps() * 86400 / 8000; }
+function armazenaRetencaoTB(){ return armazenaDiaGB() * CAM_SPEC.retencaoDias / 1000; }
+
+var AREAS = [
+  {nm:'Coworking', ds:'18 estações de estudo com tomada e Wi-Fi. Consta no preço-base de todas as tipologias.', cap:'18 estações', fonte:'ok', reserva:'coworking'},
+  {nm:'Espaço gourmet', ds:'Cozinha de apoio, mesa grande e churrasqueira. Reserva por turno.', cap:'até 24 pessoas', fonte:'ok', reserva:'gourmet'},
+  {nm:'Lavanderia coletiva', ds:'8 lavadoras confirmadas na extração do modelo BIM. Reserva por bloco de 1h30.', cap:'8 lavadoras', fonte:'ok', reserva:'lavanderia'},
+  {nm:'Deck de convivência', ds:'Área externa sombreada pelas 14 árvores do projeto paisagístico.', cap:'sem controle de lotação', fonte:'ok', reserva:false},
+  {nm:'Máquinas de conveniência', ds:'3 vending machines no térreo. Operadas por terceiro — camada 2 da tese.', cap:'3 máquinas', fonte:'ok', reserva:false},
+  {nm:'Estacionamento', ds:'10 vagas cobertas. O número exigido por lei ainda não foi conferido contra o projeto.', cap:'10 vagas', fonte:'pend', reserva:'garagem'},
+  {nm:'Academia', ds:'Prevista no conceito de moradia estudantil. Não aparece no quantitativo nem no modelo.', cap:'a definir', fonte:'no', reserva:'academia'},
+  {nm:'Bicicletário', ds:'Previsto no conceito. Não aparece no quantitativo nem no modelo.', cap:'a definir', fonte:'no', reserva:false}
+];
+
+var INCLUSO = [
+  'Apartamento mobiliado e pronto para morar',
+  'Cozinha equipada e espaço de estudos',
+  'Internet Wi-Fi, água e condomínio',
+  'Energia dentro da franquia contratada',
+  'Segurança e controle de acesso',
+  'Coworking e áreas de convivência',
+  'Aplicativo e suporte M7M'
+];
+
+var HORARIOS = ['07:00','08:30','10:00','11:30','13:00','14:30','16:00','17:30','19:00','20:30'];
+var MAQUINAS = ['L01','L02','L03','L04','L05','L06','L07','L08'];
+var MAQ_MANUT = 'L06';
+
+var TURNOS = [
+  {id:'almoco', nm:'Almoço',   h:'11:00 – 15:00'},
+  {id:'tarde',  nm:'Tarde',    h:'15:00 – 19:00'},
+  {id:'noite',  nm:'Noite',    h:'19:00 – 23:30'}
+];
+
+var PLANOS = [
+  {id:'letivo', nm:'Ano letivo', meses:10, ds:'Fevereiro a novembro'},
+  {id:'anual',  nm:'Doze meses', meses:12, ds:'Contrato cheio, sem janela de vacância'}
+];
+
+var HORAS_ACA = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+var ACA_LOTACAO = 8;
+
+var COW_TURNOS = [
+  {id:'manha', nm:'Manhã', h:'07:00 – 12:00'},
+  {id:'tarde', nm:'Tarde', h:'12:00 – 18:00'},
+  {id:'noite', nm:'Noite', h:'18:00 – 23:00'}
+];
+var COW_ESTACOES = 18;
+
+var VAGAS = ['V01','V02','V03','V04','V05','V06','V07','V08','V09','V10'];
+
+var SERVICOS = [
+  {id:'limpeza', nm:'Limpeza do apartamento', ds:'Faxina rápida, completa ou troca de enxoval', modelo:'terc',
+   ic:'<path d="M15 3.5 20.5 9"/><path d="M17.7 5.8 8.4 15.1a3 3 0 0 0-.8 1.5L7 20l3.4-.6a3 3 0 0 0 1.5-.8l9.3-9.3"/><path d="M3 21h6"/>'},
+  {id:'impressao', nm:'Impressão', ds:'Manda o arquivo e retira na impressora do coworking', modelo:'casa',
+   ic:'<path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="7" rx="1.5"/><path d="M7 14h10v6.5H7z"/><circle cx="17.5" cy="11.5" r=".7"/>'},
+  {id:'notebook', nm:'Aluguel de notebook', ds:'Diária ou semana, retirada na recepção', modelo:'terc',
+   ic:'<rect x="4" y="5" width="16" height="10.5" rx="1.5"/><path d="M2 18.5h20"/><path d="M10 18.5h4"/>'},
+  {id:'maquinas', nm:'Máquinas de conveniência', ds:'3 máquinas no térreo, pagamento pelo aplicativo', modelo:'terc',
+   ic:'<rect x="5" y="2.5" width="14" height="19" rx="1.5"/><path d="M8 6h4"/><path d="M8 9.5h4"/><path d="M8 13h4"/><rect x="7.5" y="16.5" width="9" height="3"/>'},
+  {id:'entregas', nm:'Entregas e coletas', ds:'Receber na recepção, retirar no locker ou deixar para envio', modelo:'casa',
+   ic:'<path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5 12 13l9-4.5"/><path d="M12 13v7"/>'},
+  {id:'visitante', nm:'Convite de visitante', ds:'Gera o código da entrada e reserva a vaga do carro', modelo:'casa',
+   ic:'<circle cx="9.5" cy="8" r="3.5"/><path d="M3.5 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M18 7.5v5"/><path d="M15.5 10h5"/>'},
+  {id:'pagamentos', nm:'Pagamentos', ds:'Extrato, formas de pagamento e carnê parcelado em dias', modelo:'casa',
+   ic:'<rect x="2.5" y="5.5" width="19" height="13" rx="1.5"/><path d="M2.5 10h19"/><path d="M6 14.5h4"/>'}
+];
+
+var LIMPEZAS = [
+  {id:'rapida', nm:'Rápida', ds:'Banheiro, cozinha e lixo · 1 hora'},
+  {id:'completa', nm:'Completa', ds:'Apartamento inteiro · 2h30'},
+  {id:'enxoval', nm:'Troca de enxoval', ds:'Roupa de cama e banho · 30 minutos'}
+];
+
+var VEND_ITENS = [
+  'Água mineral','Café e cappuccino','Refrigerante','Barra de cereal',
+  'Salgado assado','Chocolate','Caderno e caneta','Kit de higiene'
+];
+
+var NOTEBOOKS = 4;
+
+/* ══════════════════════════════════════════════════════
+   ESTADO
+   ══════════════════════════════════════════════════════ */
+
+var CHAVE = 'm7m-app-v1';
+var S = {lav:{}, gou:{}, estadia:[], aca:{}, cow:{}, gar:{}, svc:[], visitas:[]};
+
+function carregar(){
+  try{
+    var raw = localStorage.getItem(CHAVE);
+    if(raw){ var p = JSON.parse(raw); if(p && typeof p === 'object'){
+      S.lav = p.lav || {}; S.gou = p.gou || {}; S.estadia = p.estadia || [];
+      S.aca = p.aca || {}; S.cow = p.cow || {}; S.gar = p.gar || {};
+      S.svc = p.svc || []; S.visitas = p.visitas || [];
+    }}
+  }catch(e){/* armazenamento indisponível — a demo segue em memória */}
+}
+function salvar(){
+  try{ localStorage.setItem(CHAVE, JSON.stringify(S)); }catch(e){}
+}
+carregar();
+
+/* ══════════════════════════════════════════════════════
+   UTILIDADES
+   ══════════════════════════════════════════════════════ */
+
+var DIAS_SEM = ['dom','seg','ter','qua','qui','sex','sáb'];
+var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function pad(n){ return (n<10?'0':'')+n; }
+function iso(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function deIso(s){ var p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function fmtData(s){ var d = deIso(s); return pad(d.getDate())+' '+MESES[d.getMonth()]; }
+function fmtDataLonga(s){ var d = deIso(s); return DIAS_SEM[d.getDay()]+', '+pad(d.getDate())+' '+MESES[d.getMonth()]; }
+function brl(v, casas){
+  var c = (casas===undefined) ? 2 : casas;
+  return 'R$ ' + v.toFixed(c).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function brl0(v){ return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+
+/* semente determinística: a mesma data devolve sempre a mesma ocupação */
+function semente(str){
+  var h = 2166136261;
+  for(var i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return ((h>>>0) % 1000) / 1000;
+}
+
+function proximosDias(n){
+  var out = [], hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  for(var i=0;i<n;i++){
+    var d = new Date(hoje.getTime());
+    d.setDate(d.getDate()+i);
+    out.push(iso(d));
+  }
+  return out;
+}
+
+function el(tag, cls, txt){
+  var e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(txt !== undefined && txt !== null) e.textContent = txt;
+  return e;
+}
+
+/* ══════════════════════════════════════════════════════
+   TORRADA E FOLHA
+   ══════════════════════════════════════════════════════ */
+
+var toastEl = document.getElementById('toast');
+var toastT = null;
+function torrada(msg, sub, tipo){
+  toastEl.className = 'toast on' + (tipo ? ' '+tipo : '');
+  toastEl.innerHTML = '';
+  toastEl.appendChild(document.createTextNode(msg));
+  if(sub){ var s = el('span','sb',sub); toastEl.appendChild(s); }
+  if(toastT) clearTimeout(toastT);
+  toastT = setTimeout(function(){ toastEl.className = 'toast' + (tipo ? ' '+tipo : ''); }, 3400);
+}
+
+var scrim = document.getElementById('scrim');
+var shTitle = document.getElementById('shTitle');
+var shSub = document.getElementById('shSub');
+var shBody = document.getElementById('shBody');
+var relogioModal = null;
+
+function abrirFolha(titulo, sub, conteudo){
+  shTitle.textContent = titulo;
+  shSub.textContent = sub || '';
+  shBody.innerHTML = '';
+  if(typeof conteudo === 'string') shBody.innerHTML = conteudo;
+  else shBody.appendChild(conteudo);
+  scrim.classList.add('on');
+  document.getElementById('shClose').focus();
+}
+function fecharFolha(){
+  scrim.classList.remove('on');
+  shBody.innerHTML = '';
+  if(relogioModal){ clearInterval(relogioModal); relogioModal = null; }
+}
+document.getElementById('shClose').addEventListener('click', fecharFolha);
+scrim.addEventListener('click', function(e){ if(e.target === scrim) fecharFolha(); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && scrim.classList.contains('on')) fecharFolha(); });
+
+/* ══════════════════════════════════════════════════════
+   NAVEGAÇÃO
+   ══════════════════════════════════════════════════════ */
+
+var views = document.getElementById('views');
+function irPara(nome){
+  var vs = document.querySelectorAll('.view');
+  for(var i=0;i<vs.length;i++) vs[i].classList.toggle('on', vs[i].dataset.view === nome);
+  var ts = document.querySelectorAll('.tab');
+  for(var j=0;j<ts.length;j++) ts[j].setAttribute('aria-selected', String(ts[j].dataset.go === nome));
+  views.scrollTop = 0;
+}
+var tabs = document.querySelectorAll('.tab');
+for(var t=0;t<tabs.length;t++){
+  tabs[t].addEventListener('click', function(){ irPara(this.dataset.go); });
+}
+
+/* segmentos internos */
+var segs = document.querySelectorAll('.seg');
+for(var g=0; g<segs.length; g++){
+  (function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('.sgb');
+      if(!b) return;
+      var botoes = seg.querySelectorAll('.sgb');
+      for(var i=0;i<botoes.length;i++) botoes[i].setAttribute('aria-selected', String(botoes[i] === b));
+      var raiz = seg.closest('.view');
+      var panes = raiz.querySelectorAll('.pane');
+      for(var k=0;k<panes.length;k++) panes[k].classList.toggle('on', panes[k].dataset.pane === b.dataset.pane);
+    });
+  })(segs[g]);
+}
+
+/* ══════════════════════════════════════════════════════
+   CENAS DE CÂMERA
+   ══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════
+   MOTOR DE CENA EM CANVAS
+
+   Cada quadro é desenhado do zero: fundo, geometria em
+   perspectiva, poças de luz, pessoas e veículos em
+   movimento, e por cima os defeitos que toda imagem de
+   CFTV tem — ruído, blocagem de compressão, linhas de
+   varredura e vinheta. À noite as câmeras externas
+   passam a infravermelho, monocromáticas.
+
+   Continua sendo imagem SIMULADA. Não existe câmera
+   instalada, e o aplicativo diz isso em cada tela.
+   ══════════════════════════════════════════════════════ */
+
+var CW = 208, CH = 156;               /* resolução de desenho, propositalmente baixa */
+var feeds = [];                        /* canvases vivos */
+var ruidos = [];                       /* quadros de ruído pré-gerados */
+
+(function gerarRuido(){
+  for(var k=0;k<4;k++){
+    var c = document.createElement('canvas');
+    c.width = CW; c.height = CH;
+    var x = c.getContext('2d');
+    var img = x.createImageData(CW, CH);
+    for(var i=0;i<img.data.length;i+=4){
+      var v = 120 + Math.random()*135;
+      img.data[i] = img.data[i+1] = img.data[i+2] = v;
+      img.data[i+3] = 255;
+    }
+    x.putImageData(img, 0, 0);
+    ruidos.push(c);
+  }
+})();
+
+/* paletas por hora do dia */
+function modoDe(sc){
+  var h = new Date().getHours();
+  var externo = (sc === 'ext' || sc === 'gar');
+  if(h >= 6 && h < 17) return externo ? 'dia' : 'luz';
+  if(h >= 17 && h < 20) return externo ? 'tarde' : 'luz';
+  return externo ? 'ir' : 'luz';
+}
+
+var PAL = {
+  dia:   {ceu:['#4E6274','#8899A6'], solo:'#3A4550', vulto:'#28313A', luz:0,   par:'#46525E', det:'#5C6874'},
+  tarde: {ceu:['#2A3340','#5A4A42'], solo:'#242C34', vulto:'#1A2129', luz:.55, par:'#2C353F', det:'#3A444F'},
+  ir:    {ceu:['#0D110F','#161C18'], solo:'#1C231F', vulto:'#28312B', luz:.2,  par:'#222A25', det:'#333D36'},
+  luz:   {ceu:['#141A21','#1D242C'], solo:'#20272F', vulto:'#161C23', luz:.75, par:'#262F38', det:'#333D47'}
+};
+
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+/* pessoa vista de cima e à frente, simplificada */
+function pessoa(x, ctx, baseY, alt, cor){
+  var w = alt*0.30;
+  ctx.fillStyle = 'rgba(0,0,0,.35)';
+  ctx.beginPath();
+  ctx.ellipse(x, baseY, w*0.9, alt*0.07, 0, 0, 6.2832);
+  ctx.fill();
+  ctx.fillStyle = cor;
+  ctx.fillRect(x - w/2, baseY - alt*0.62, w, alt*0.62);          /* tronco e pernas */
+  ctx.beginPath();
+  ctx.arc(x, baseY - alt*0.72, alt*0.115, 0, 6.2832);            /* cabeça */
+  ctx.fill();
+}
+
+function carro(ctx, x, y, larg, cor, faroisAcesos){
+  var h = larg*0.42;
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + h*0.12, larg*0.56, h*0.20, 0, 0, 6.2832);
+  ctx.fill();
+  ctx.fillStyle = cor;
+  ctx.beginPath();
+  ctx.moveTo(x - larg/2, y);
+  ctx.lineTo(x - larg*0.40, y - h*0.62);
+  ctx.lineTo(x + larg*0.40, y - h*0.62);
+  ctx.lineTo(x + larg/2, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillRect(x - larg/2, y - h*0.30, larg, h*0.30);
+  if(faroisAcesos){
+    ctx.fillStyle = 'rgba(240,225,180,.85)';
+    ctx.fillRect(x - larg*0.44, y - h*0.24, larg*0.13, h*0.10);
+    ctx.fillRect(x + larg*0.31, y - h*0.24, larg*0.13, h*0.10);
+  }
+}
+
+/* ── cenas ───────────────────────────────────────────── */
+
+function cenaExt(ctx, t, p, s){
+  var g = ctx.createLinearGradient(0,0,0,CH*0.62);
+  g.addColorStop(0, p.ceu[0]); g.addColorStop(1, p.ceu[1]);
+  ctx.fillStyle = g; ctx.fillRect(0,0,CW,CH*0.62);
+  ctx.fillStyle = p.solo; ctx.fillRect(0,CH*0.62,CW,CH*0.38);
+
+  /* muro e portão ao fundo */
+  ctx.fillStyle = p.par;
+  ctx.fillRect(0, CH*0.40, CW, CH*0.22);
+  ctx.fillStyle = p.vulto;
+  ctx.fillRect(CW*0.06, CH*0.20, CW*0.30, CH*0.42);
+  ctx.fillRect(CW*0.66, CH*0.14, CW*0.28, CH*0.48);
+  /* janelas acesas */
+  if(p.luz > 0){
+    ctx.fillStyle = 'rgba(228,206,150,' + (0.30 + p.luz*0.35) + ')';
+    for(var i=0;i<3;i++){
+      if(((s + i) % 4) !== 0) ctx.fillRect(CW*(0.10 + i*0.08), CH*0.27, CW*0.045, CH*0.055);
+      if(((s + i) % 3) !== 0) ctx.fillRect(CW*(0.70 + i*0.07), CH*0.22, CW*0.04, CH*0.05);
+    }
+  }
+  /* poste e poça de luz */
+  ctx.fillStyle = p.det;
+  ctx.fillRect(CW*0.47, CH*0.16, 2, CH*0.46);
+  if(p.luz > 0){
+    var lg = ctx.createRadialGradient(CW*0.48, CH*0.62, 2, CW*0.48, CH*0.62, CW*0.26);
+    lg.addColorStop(0, 'rgba(232,212,160,' + (0.22*p.luz) + ')');
+    lg.addColorStop(1, 'rgba(232,212,160,0)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, CH*0.44, CW, CH*0.56);
+  }
+  /* calçada em perspectiva */
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1;
+  for(var j=1;j<5;j++){
+    var yy = CH*0.62 + (CH*0.38) * (j/5)*(j/5);
+    ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(CW, yy); ctx.stroke();
+  }
+  /* pedestre atravessando */
+  var fx = ((t*0.052 + s*0.31) % 1.35) - 0.18;
+  if(fx > -0.1 && fx < 1.1){
+    var prof = 0.35 + fx*0.25;
+    pessoa(CW*fx, ctx, CH*(0.66 + prof*0.24), CH*(0.13 + prof*0.16), p.vulto);
+  }
+}
+
+function cenaCor(ctx, t, p, s){
+  ctx.fillStyle = p.ceu[0]; ctx.fillRect(0,0,CW,CH);
+  var vx = CW*0.5, vy = CH*0.44;
+  /* piso */
+  ctx.fillStyle = p.solo;
+  ctx.beginPath();
+  ctx.moveTo(0,CH); ctx.lineTo(CW,CH);
+  ctx.lineTo(vx + CW*0.10, vy); ctx.lineTo(vx - CW*0.10, vy);
+  ctx.closePath(); ctx.fill();
+  /* paredes */
+  ctx.fillStyle = p.par;
+  ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(vx - CW*0.10, vy); ctx.lineTo(vx - CW*0.10, vy + CH*0.16); ctx.lineTo(0,CH);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = p.vulto;
+  ctx.beginPath();
+  ctx.moveTo(CW,0); ctx.lineTo(vx + CW*0.10, vy); ctx.lineTo(vx + CW*0.10, vy + CH*0.16); ctx.lineTo(CW,CH);
+  ctx.closePath(); ctx.fill();
+  /* portas recuando */
+  for(var i=1;i<=4;i++){
+    var k = i/5, e = lerp(0, vx - CW*0.10, k), top = lerp(0, vy, k), bot = lerp(CH, vy + CH*0.16, k);
+    ctx.fillStyle = p.det;
+    ctx.fillRect(e, lerp(top,bot,0.22), Math.max(2, CW*0.05*(1-k)), (bot-top)*0.62);
+    ctx.fillRect(CW - e - Math.max(2, CW*0.05*(1-k)), lerp(top,bot,0.22), Math.max(2, CW*0.05*(1-k)), (bot-top)*0.62);
+  }
+  /* luminárias no teto */
+  if(p.luz > 0){
+    for(var j=1;j<=3;j++){
+      var kk = j/4, w = CW*0.16*(1-kk*0.7);
+      ctx.fillStyle = 'rgba(236,222,186,' + (0.30*p.luz) + ')';
+      ctx.fillRect(vx - w/2, lerp(0, vy, kk), w, Math.max(1.5, 4*(1-kk)));
+    }
+    var pg = ctx.createRadialGradient(vx, CH*0.86, 4, vx, CH*0.86, CW*0.42);
+    pg.addColorStop(0,'rgba(236,222,186,' + (0.13*p.luz) + ')');
+    pg.addColorStop(1,'rgba(236,222,186,0)');
+    ctx.fillStyle = pg; ctx.fillRect(0, vy, CW, CH-vy);
+  }
+  /* fundo do corredor */
+  ctx.fillStyle = p.det;
+  ctx.fillRect(vx - CW*0.10, vy, CW*0.20, CH*0.16);
+  /* alguém vindo em direção à câmera */
+  var w2 = (t*0.10 + s*0.47) % 1.7;
+  if(w2 < 1){
+    var d = w2*w2;
+    pessoa(vx + Math.sin(t*0.6 + s)*CW*0.04*d, ctx, lerp(vy + CH*0.16, CH*1.02, d), lerp(CH*0.08, CH*0.86, d), p.vulto);
+  }
+}
+
+function cenaGar(ctx, t, p, s){
+  ctx.fillStyle = p.ceu[0]; ctx.fillRect(0,0,CW,CH*0.34);
+  ctx.fillStyle = p.solo; ctx.fillRect(0,CH*0.34,CW,CH*0.66);
+  /* laje e pilares */
+  ctx.fillStyle = p.par; ctx.fillRect(0,0,CW,CH*0.13);
+  ctx.fillStyle = p.vulto;
+  ctx.fillRect(CW*0.13, CH*0.13, CW*0.055, CH*0.30);
+  ctx.fillRect(CW*0.80, CH*0.13, CW*0.055, CH*0.32);
+  /* faixas de vaga em perspectiva */
+  ctx.strokeStyle = 'rgba(190,205,215,.22)'; ctx.lineWidth = 1.4;
+  for(var i=0;i<5;i++){
+    var x0 = CW*(0.06 + i*0.22);
+    ctx.beginPath(); ctx.moveTo(x0, CH*0.98); ctx.lineTo(x0 + CW*0.13, CH*0.42); ctx.stroke();
+  }
+  /* dois carros parados */
+  carro(ctx, CW*0.30, CH*0.84, CW*0.30, p.vulto, false);
+  carro(ctx, CW*0.72, CH*0.72, CW*0.24, p.par, false);
+  /* um manobrando */
+  var mv = (t*0.045 + s*0.23) % 1.6;
+  if(mv < 1) carro(ctx, CW*(1.15 - mv*1.3), CH*0.58, CW*0.20, p.det, p.luz > 0.3);
+  /* luminária */
+  if(p.luz > 0){
+    ctx.fillStyle = 'rgba(230,218,180,' + (0.26*p.luz) + ')';
+    ctx.fillRect(CW*0.30, CH*0.10, CW*0.40, 3);
+    var gg = ctx.createRadialGradient(CW*0.5, CH*0.12, 3, CW*0.5, CH*0.12, CW*0.55);
+    gg.addColorStop(0,'rgba(230,218,180,' + (0.11*p.luz) + ')');
+    gg.addColorStop(1,'rgba(230,218,180,0)');
+    ctx.fillStyle = gg; ctx.fillRect(0,0,CW,CH);
+  }
+}
+
+function cenaSal(ctx, t, p, s){
+  ctx.fillStyle = p.ceu[1]; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle = p.solo; ctx.fillRect(0,CH*0.58,CW,CH*0.42);
+  /* janela */
+  var noite = p.luz > 0.4;
+  ctx.fillStyle = noite ? '#0B1116' : '#5E7386';
+  ctx.fillRect(CW*0.60, CH*0.14, CW*0.33, CH*0.38);
+  ctx.strokeStyle = p.det; ctx.lineWidth = 1.5;
+  ctx.strokeRect(CW*0.60, CH*0.14, CW*0.33, CH*0.38);
+  ctx.beginPath(); ctx.moveTo(CW*0.765, CH*0.14); ctx.lineTo(CW*0.765, CH*0.52); ctx.stroke();
+  /* balcão e bancos */
+  ctx.fillStyle = p.par;
+  ctx.fillRect(CW*0.06, CH*0.56, CW*0.44, CH*0.07);
+  ctx.fillStyle = p.vulto;
+  ctx.fillRect(CW*0.10, CH*0.63, CW*0.07, CH*0.16);
+  ctx.fillRect(CW*0.24, CH*0.63, CW*0.07, CH*0.16);
+  ctx.fillRect(CW*0.38, CH*0.63, CW*0.07, CH*0.16);
+  /* planta */
+  ctx.fillStyle = p.det;
+  ctx.beginPath(); ctx.ellipse(CW*0.54, CH*0.50, CW*0.05, CH*0.09, 0, 0, 6.2832); ctx.fill();
+  /* duas pessoas sentadas, com leve balanço */
+  pessoa(CW*0.155 + Math.sin(t*0.5+s)*0.7, ctx, CH*0.70, CH*0.20, p.vulto);
+  if((s % 3) !== 0) pessoa(CW*0.295 + Math.sin(t*0.42+s*2)*0.7, ctx, CH*0.70, CH*0.19, p.vulto);
+  /* luz de teto */
+  if(p.luz > 0){
+    var lg = ctx.createRadialGradient(CW*0.32, CH*0.06, 3, CW*0.32, CH*0.06, CW*0.62);
+    lg.addColorStop(0,'rgba(236,220,180,' + (0.15*p.luz) + ')');
+    lg.addColorStop(1,'rgba(236,220,180,0)');
+    ctx.fillStyle = lg; ctx.fillRect(0,0,CW,CH);
+  }
+}
+
+function cenaSrv(ctx, t, p, s){
+  ctx.fillStyle = p.ceu[1]; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle = p.solo; ctx.fillRect(0,CH*0.72,CW,CH*0.28);
+  /* oito lavadoras, duas fileiras de quatro */
+  for(var r=0;r<2;r++){
+    for(var i=0;i<4;i++){
+      var x = CW*(0.05 + i*0.24), y = CH*(0.16 + r*0.29), w = CW*0.20, h = CH*0.26;
+      ctx.fillStyle = (r*4+i) % 2 ? p.par : p.vulto;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, w, h);
+      /* escotilha — a que está rodando gira */
+      var rodando = ((r*4+i+s) % 3) === 0;
+      ctx.fillStyle = '#0A0E12';
+      ctx.beginPath(); ctx.arc(x + w/2, y + h*0.55, Math.min(w,h)*0.28, 0, 6.2832); ctx.fill();
+      if(rodando){
+        ctx.strokeStyle = 'rgba(200,214,224,.55)'; ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(x + w/2, y + h*0.55, Math.min(w,h)*0.19, t*2.4 + i, t*2.4 + i + 2.1);
+        ctx.stroke();
+      }
+      /* piloto */
+      ctx.fillStyle = rodando ? 'rgba(90,200,140,.9)' : 'rgba(120,130,140,.5)';
+      ctx.fillRect(x + w*0.10, y + h*0.12, 3, 3);
+    }
+  }
+  /* alguém carregando cesto, de vez em quando */
+  var pw = (t*0.06 + s*0.37) % 2.4;
+  if(pw < 1) pessoa(CW*(0.08 + pw*0.86), ctx, CH*0.94, CH*0.24, p.vulto);
+  if(p.luz > 0){
+    ctx.fillStyle = 'rgba(232,222,192,' + (0.22*p.luz) + ')';
+    ctx.fillRect(CW*0.22, CH*0.04, CW*0.56, 3);
+  }
+}
+
+var CENAS_FN = {ext:cenaExt, cor:cenaCor, gar:cenaGar, sal:cenaSal, srv:cenaSrv};
+
+/* ── defeitos de imagem ──────────────────────────────── */
+function aplicarDefeitos(ctx, t, degradada, ir){
+  /* blocagem de compressão: alguns macroblocos ficam parados */
+  if(degradada || Math.random() < 0.10){
+    var n = degradada ? 6 : 2;
+    for(var i=0;i<n;i++){
+      var bx = Math.floor(Math.random()*(CW/8))*8, by = Math.floor(Math.random()*(CH/8))*8;
+      ctx.fillStyle = 'rgba(140,155,170,' + (degradada ? 0.10 : 0.05) + ')';
+      ctx.fillRect(bx, by, 8, 8);
+    }
+  }
+  /* ruído */
+  ctx.globalAlpha = degradada ? 0.13 : 0.07;
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.drawImage(ruidos[Math.floor(t*8) % 4], 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  /* linhas de varredura */
+  ctx.fillStyle = 'rgba(0,0,0,.16)';
+  for(var y=0; y<CH; y+=3) ctx.fillRect(0, y, CW, 1);
+  /* infravermelho: monocromático com estouro no centro */
+  if(ir){
+    ctx.globalCompositeOperation = 'saturation';
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0,0,CW,CH);
+    ctx.globalCompositeOperation = 'source-over';
+    var irg = ctx.createRadialGradient(CW/2, CH*0.55, 4, CW/2, CH*0.55, CW*0.62);
+    irg.addColorStop(0,'rgba(210,225,215,.10)');
+    irg.addColorStop(1,'rgba(210,225,215,0)');
+    ctx.fillStyle = irg; ctx.fillRect(0,0,CW,CH);
+  }
+  /* vinheta */
+  var vg = ctx.createRadialGradient(CW/2, CH/2, CH*0.30, CW/2, CH/2, CW*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,.55)');
+  ctx.fillStyle = vg; ctx.fillRect(0,0,CW,CH);
+}
+
+function montarCena(cam){
+  var cv = document.createElement('canvas');
+  cv.className = 'sc';
+  cv.width = CW; cv.height = CH;
+  cv.setAttribute('role','img');
+  cv.setAttribute('aria-label','Imagem simulada da câmera ' + cam.id + ' — ' + cam.nm);
+  cv.__ver = true;
+  feeds.push({cv:cv, ctx:cv.getContext('2d'), cam:cam, s:(cam.id.charCodeAt(1)*7 + cam.id.charCodeAt(2)) % 11});
+  if(visivel) visivel.observe(cv);
+  return cv;
+}
+
+/* Só desenha o que está em tela. Num celular o mural mostra seis
+   câmeras por vez, e as outras dezoito não gastam bateria. */
+var visivel = null;
+if('IntersectionObserver' in window){
+  visivel = new IntersectionObserver(function(ents){
+    ents.forEach(function(e){ e.target.__ver = e.isIntersecting; });
+  }, {root:null, rootMargin:'120px'});
+}
+
+/* aparelho modesto desenha menos quadros */
+var LENTO = (navigator.hardwareConcurrency || 4) <= 4;
+var INTERVALO = LENTO ? 125 : 83;          /* 8 ou 12 quadros por segundo */
+var parado = false;
+document.addEventListener('visibilitychange', function(){ parado = document.hidden; });
+
+var ultimo = 0;
+function laco(ms){
+  requestAnimationFrame(laco);
+  if(parado || ms - ultimo < INTERVALO) return;
+  ultimo = ms;
+  var t = ms/1000;
+  for(var i=feeds.length-1;i>=0;i--){
+    var f = feeds[i];
+    if(!f.cv.isConnected){
+      if(visivel) visivel.unobserve(f.cv);
+      feeds.splice(i,1);
+      continue;
+    }
+    if(visivel && f.cv.__ver === false) continue;
+    var modo = modoDe(f.cam.sc);
+    (CENAS_FN[f.cam.sc] || cenaExt)(f.ctx, t, PAL[modo], f.s);
+    aplicarDefeitos(f.ctx, t, f.cam.st === 'deg', modo === 'ir');
+  }
+}
+requestAnimationFrame(laco);
+
+function montarOverlay(cam, grande){
+  var ov = el('div','ov');
+  if(cam.st !== 'off'){
+    var rec = el('div','rec');
+    rec.appendChild(el('i'));
+    rec.appendChild(document.createTextNode(grande ? 'AO VIVO · '+cam.id : cam.id));
+    ov.appendChild(rec);
+    var ts = el('div','ts');
+    ts.dataset.clock = '1';
+    ts.textContent = agora();
+    ov.appendChild(ts);
+  }
+  ov.appendChild(el('div','scan'));
+  ov.appendChild(el('div','grain'));
+  return ov;
+}
+
+function agora(){
+  var d = new Date();
+  return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+}
+
+function tick(){
+  var alvos = document.querySelectorAll('[data-clock]');
+  var a = agora();
+  for(var i=0;i<alvos.length;i++) alvos[i].textContent = a;
+}
+setInterval(tick, 1000);
+
+/* ── mural ── */
+var zonaAtiva = 'Todas';
+var camWall = document.getElementById('camWall');
+var camFilters = document.getElementById('camFilters');
+
+function pintarFiltros(){
+  camFilters.innerHTML = '';
+  ZONAS.forEach(function(z){
+    var b = el('button','fchip', z);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(z === zonaAtiva));
+    b.addEventListener('click', function(){ zonaAtiva = z; pintarFiltros(); pintarMural(); });
+    camFilters.appendChild(b);
+  });
+}
+
+function pintarMural(){
+  camWall.innerHTML = '';
+  CAMS.filter(function(c){ return zonaAtiva === 'Todas' || c.z === zonaAtiva; })
+      .forEach(function(cam){
+    var b = el('button','cam' + (cam.st === 'off' ? ' off' : ''));
+    b.type = 'button';
+    b.setAttribute('aria-label', cam.id + ' — ' + cam.nm);
+
+    var feed = el('div','feed');
+    if(cam.st === 'off'){
+      var ns = el('div','nosig');
+      ns.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M5 12.5a10 10 0 0 1 3.5-2.3"/><path d="M15.5 10.2A10 10 0 0 1 19 12.5"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".6"/></svg>';
+      ns.appendChild(document.createTextNode('Sem sinal'));
+      feed.appendChild(ns);
+    }else{
+      var cena = montarCena(cam);
+      if(cam.st === 'deg') cena.classList.add('deg');
+      feed.appendChild(cena);
+    }
+    feed.appendChild(montarOverlay(cam, false));
+    b.appendChild(feed);
+
+    var meta = el('div','meta');
+    meta.appendChild(el('div','cid', cam.id + (cam.st === 'deg' ? ' · degradada' : '')));
+    meta.appendChild(el('div','cnm', cam.nm));
+    b.appendChild(meta);
+
+    b.addEventListener('click', function(){ abrirCamera(cam); });
+    camWall.appendChild(b);
+  });
+
+  var on = CAMS.filter(function(c){ return c.st !== 'off'; }).length;
+  var mostrando = camWall.children.length;
+  document.getElementById('camSummary').textContent =
+    on + ' de ' + CAMS.length + ' com sinal · 1 sem sinal · mostrando ' + mostrando +
+    (zonaAtiva === 'Todas' ? ' pontos' : ' em ' + zonaAtiva);
+
+  var h = new Date().getHours();
+  var noturno = (h >= 20 || h < 6);
+  var t3 = document.getElementById('camTiles');
+  t3.innerHTML = '';
+  [
+    {k:'Banda de subida', v:numeroBr(bandaTotalMbps(),1), u:'Mbps somando os 24 pontos'},
+    {k:'Gravação por dia', v:numeroBr(armazenaDiaGB(),0), u:'GB · ' + CAM_SPEC.codec + ', ' + CAM_SPEC.fpsOk + ' q/s'},
+    {k:'Retenção de ' + CAM_SPEC.retencaoDias + ' dias', v:numeroBr(armazenaRetencaoTB(),1), u:'TB de disco necessário'}
+  ].forEach(function(d){
+    var c = el('div','tile');
+    c.appendChild(el('div','k', d.k));
+    c.appendChild(el('div','v g', d.v));
+    c.appendChild(el('div','u', d.u));
+    t3.appendChild(c);
+  });
+
+  document.getElementById('camArmazena').innerHTML =
+    'Com ' + CAM_SPEC.resOk + ' a ' + CAM_SPEC.fpsOk + ' quadros por segundo em ' + CAM_SPEC.codec +
+    ', os 24 pontos somam <strong>' + numeroBr(bandaTotalMbps(),1) + ' Mbps</strong> de subida contínua e gravam <strong>' +
+    numeroBr(armazenaDiaGB(),0) + ' GB por dia</strong>. Guardar ' + CAM_SPEC.retencaoDias + ' dias exige <strong>' +
+    numeroBr(armazenaRetencaoTB(),1) + ' TB</strong> de disco.' +
+    (noturno ? ' As câmeras externas estão em <strong>infravermelho</strong> — monocromáticas, como a esta hora.' : '');
+}
+
+function numeroBr(v, casas){
+  return v.toLocaleString('pt-BR', {minimumFractionDigits:casas, maximumFractionDigits:casas});
+}
+
+function abrirCamera(cam){
+  var box = document.createElement('div');
+
+  var big = el('div','bigfeed');
+  if(cam.st === 'off'){
+    var ns = el('div','nosig');
+    ns.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M5 12.5a10 10 0 0 1 3.5-2.3"/><path d="M15.5 10.2A10 10 0 0 1 19 12.5"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".6"/></svg>';
+    ns.appendChild(document.createTextNode('Sem sinal há 2h14'));
+    big.appendChild(ns);
+  }else{
+    var cena = montarCena(cam.sc);
+    if(cam.st === 'deg') cena.classList.add('deg');
+    big.appendChild(cena);
+  }
+  big.appendChild(montarOverlay(cam, true));
+  box.appendChild(big);
+
+  /* faixa de atividade das últimas 24 horas */
+  var hAgora = new Date().getHours();
+  box.appendChild(el('h3','sec','Atividade nas últimas 24 horas'));
+  var strip = el('div','strip');
+  for(var q=0;q<24;q++){
+    var hora = (hAgora - 23 + q + 24) % 24;
+    var i2 = el('i');
+    if(cam.st === 'off' && q >= 22){ i2.className = 'gap'; }
+    else{
+      var mov = semente(cam.id + 'h' + hora);
+      var pico = (hora >= 7 && hora <= 9) || (hora >= 17 && hora <= 21);
+      var nivel = mov * (pico ? 1.5 : 0.7);
+      i2.className = nivel > 0.62 ? 'a3' : nivel > 0.32 ? 'a2' : nivel > 0.12 ? 'a1' : '';
+    }
+    i2.title = pad(hora) + ':00';
+    strip.appendChild(i2);
+  }
+  box.appendChild(strip);
+  var lb = el('div','striplb');
+  lb.appendChild(el('span','', pad((hAgora+1)%24) + ':00 de ontem'));
+  lb.appendChild(el('span','','agora'));
+  box.appendChild(lb);
+
+  box.appendChild(el('h3','sec','Ficha do ponto'));
+  var stats = el('div','camstats');
+  var deg = cam.st === 'deg', off = cam.st === 'off';
+  var mbps = off ? 0 : (deg ? CAM_SPEC.mbpsDeg : CAM_SPEC.mbpsOk);
+  var linhas = [
+    ['Ponto', cam.id],
+    ['Zona', cam.z],
+    ['Estado', off ? 'sem sinal' : (deg ? 'qualidade reduzida' : 'transmitindo')],
+    ['Resolução', off ? '—' : (deg ? CAM_SPEC.resDeg : CAM_SPEC.resOk)],
+    ['Quadros', off ? '—' : (deg ? CAM_SPEC.fpsDeg : CAM_SPEC.fpsOk) + ' q/s'],
+    ['Compressão', off ? '—' : CAM_SPEC.codec],
+    ['Taxa', off ? '—' : numeroBr(mbps,1) + ' Mbps'],
+    ['Gera por dia', off ? '—' : numeroBr(mbps*86400/8000,1) + ' GB'],
+    ['Modo agora', off ? '—' : (modoDe(cam.sc) === 'ir' ? 'infravermelho' : 'luz visível')],
+    ['Retenção', CAM_SPEC.retencaoDias + ' dias · a orçar']
+  ];
+  linhas.forEach(function(l){
+    var cs = el('div','cs');
+    cs.appendChild(el('div','k', l[0]));
+    cs.appendChild(el('div','v', l[1]));
+    stats.appendChild(cs);
+  });
+  box.appendChild(stats);
+
+  var acts = el('div','actions');
+  var b1 = el('button','btn ghost sm','Salvar imagem');
+  b1.type = 'button';
+  b1.disabled = cam.st === 'off';
+  b1.addEventListener('click', function(){
+    torrada('Imagem guardada em Registros.', cam.id + ' · ' + agora(), 'good');
+  });
+  var b2 = el('button','btn ghost sm','Ver as últimas 24h');
+  b2.type = 'button';
+  b2.addEventListener('click', function(){
+    torrada('Gravação ainda não disponível.', 'Depende do gravador — não orçado (Etapa 1)');
+  });
+  acts.appendChild(b1); acts.appendChild(b2);
+  box.appendChild(acts);
+
+  var nota = el('div','note bad');
+  nota.style.marginBottom = '0';
+  nota.innerHTML = '<span class="lbl">Imagem simulada</span><p>Este quadro é desenhado pelo navegador. Não há câmera instalada neste ponto.</p>';
+  box.appendChild(nota);
+
+  abrirFolha(cam.nm, cam.id + ' · ' + cam.z, box);
+}
+
+pintarFiltros();
+pintarMural();
+
+/* ══════════════════════════════════════════════════════
+   INÍCIO
+   ══════════════════════════════════════════════════════ */
+
+function contar(obj){
+  var n = 0, k;
+  for(k in obj){ if(Object.prototype.hasOwnProperty.call(obj,k)) n++; }
+  return n;
+}
+
+function contarReservas(){
+  return contar(S.lav) + contar(S.gou) + contar(S.aca) + contar(S.cow) + contar(S.gar) + S.estadia.length;
+}
+
+function pintarInicio(){
+  var camsOn = CAMS.filter(function(c){ return c.st !== 'off'; }).length;
+  var hoje = proximosDias(1)[0];
+  var ocupHoje = ocupacaoLav(hoje);
+
+  var dados = [
+    {k:'Câmeras com sinal', v:camsOn+'/'+CAMS.length, cls:(camsOn === CAMS.length ? 'p' : 'n'), u:'1 ponto sem sinal'},
+    {k:'Apartamentos', v:String(INVENTARIO.apartamentos), cls:'g', u:INVENTARIO.leitos+' leitos'},
+    {k:'Lavadoras livres', v:ocupHoje.livres+'/'+(MAQUINAS.length-1), cls:'', u:'no bloco de agora'},
+    {k:'Vagas livres', v:garLivres(hoje)+'/'+VAGAS.length, cls:'', u:'garagem, hoje'},
+    {k:'Minhas reservas', v:String(contarReservas()), cls:'g', u:'neste aparelho'},
+    {k:'Serviços pedidos', v:String(S.svc.length + S.visitas.length), cls:'', u:'nenhum cotado'}
+  ];
+  var box = document.getElementById('homeTiles');
+  box.innerHTML = '';
+  dados.forEach(function(d){
+    var t = el('div','tile');
+    t.appendChild(el('div','k', d.k));
+    t.appendChild(el('div','v ' + d.cls, d.v));
+    t.appendChild(el('div','u', d.u));
+    box.appendChild(t);
+  });
+
+  pintarTicker();
+  pintarMinhasReservas(document.getElementById('homeRes'));
+}
+
+var ATALHOS = [
+  {lb:'Câmeras', ic:'<path d="M2.5 6.5 17 3.2l1.4 5.2L3.9 11.7z"/><path d="M18.4 8.4 22 6.9v6.6l-3.1-1.3"/><circle cx="8" cy="19.5" r="1.6"/><path d="M9.6 19.5h7.9"/>', go:'cameras'},
+  {lb:'Lavanderia', ic:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><circle cx="12" cy="14" r="4.2"/><circle cx="7.5" cy="6.5" r=".7"/><circle cx="10.5" cy="6.5" r=".7"/>', go:'reservas', pane:'lavanderia'},
+  {lb:'Academia', ic:'<path d="M3 9v6"/><path d="M21 9v6"/><path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M6.5 12h11"/>', go:'reservas', pane:'academia'},
+  {lb:'Coworking', ic:'<rect x="3" y="5" width="18" height="10" rx="1.5"/><path d="M3 18.5h18"/><path d="M8 15v3.5"/><path d="M16 15v3.5"/>', go:'reservas', pane:'coworking'},
+  {lb:'Gourmet', ic:'<path d="M6 3v8a2.5 2.5 0 0 0 5 0V3"/><path d="M8.5 11v10"/><path d="M17.5 3c-1.5 1.5-2 3.5-2 6s.7 3 2 3 2-1 2-3V3z"/><path d="M17.5 12v9"/>', go:'reservas', pane:'gourmet'},
+  {lb:'Garagem', ic:'<path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9.5 20v-6.5h5V20"/>', go:'reservas', pane:'garagem'},
+  {lb:'Limpeza', ic:'<path d="M15 3.5 20.5 9"/><path d="M17.7 5.8 8.4 15.1a3 3 0 0 0-.8 1.5L7 20l3.4-.6a3 3 0 0 0 1.5-.8l9.3-9.3"/><path d="M3 21h6"/>', acao:'limpeza'},
+  {lb:'Visitante', ic:'<circle cx="9.5" cy="8" r="3.5"/><path d="M3.5 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M18 7.5v5"/><path d="M15.5 10h5"/>', acao:'visitante'},
+  {lb:'Chave digital', ic:'<circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21"/><path d="M18 12v3"/><path d="M15 12v2.5"/>', acao:'chave'}
+];
+
+function pintarAtalhos(){
+  var box = document.getElementById('quick');
+  box.innerHTML = '';
+  ATALHOS.forEach(function(a){
+    var b = el('button','qk');
+    b.type = 'button';
+    var svg = '<svg viewBox="0 0 24 24">'+a.ic+'</svg>';
+    b.innerHTML = svg;
+    b.appendChild(el('span','lb', a.lb));
+    b.addEventListener('click', function(){
+      if(a.acao === 'chave'){ abrirChave(); return; }
+      if(a.acao === 'limpeza'){ svcLimpeza(); return; }
+      if(a.acao === 'visitante'){ svcVisitante(); return; }
+      irPara(a.go);
+      if(a.pane) trocarPane(a.go, a.pane);
+    });
+    box.appendChild(b);
+  });
+}
+
+function trocarPane(view, pane){
+  var raiz = document.getElementById('v-'+view);
+  var botoes = raiz.querySelectorAll('.sgb');
+  for(var i=0;i<botoes.length;i++) botoes[i].setAttribute('aria-selected', String(botoes[i].dataset.pane === pane));
+  var panes = raiz.querySelectorAll('.pane');
+  for(var k=0;k<panes.length;k++) panes[k].classList.toggle('on', panes[k].dataset.pane === pane);
+}
+
+var EVENTOS = [
+  {h:-4, tx:'<b>Portaria</b> liberou entrega para o apto 14', sub:'C01 · reconhecimento de placa'},
+  {h:-26, tx:'<b>Lavadora L03</b> terminou o ciclo', sub:'C22 · aviso enviado ao morador'},
+  {h:-51, tx:'<b>Espaço gourmet</b> reservado para sábado à noite', sub:'apto 07 · 12 pessoas'},
+  {h:-83, tx:'<b>C17</b> perdeu o sinal', sub:'corredor 1º andar B · chamado aberto'},
+  {h:-118, tx:'<b>Encomenda</b> guardada no locker 04', sub:'C23 · retirada por código'},
+  {h:-164, tx:'<b>Cancela</b> abriu para o veículo da vaga 06', sub:'C02 · morador cadastrado'}
+];
+
+function pintarEventos(){
+  var box = document.getElementById('eventFeed');
+  box.innerHTML = '';
+  var base = new Date();
+  EVENTOS.forEach(function(e, i){
+    var d = new Date(base.getTime() + e.h*60000);
+    var row = el('div','ev' + (i === 0 ? ' hi' : ''));
+    row.appendChild(el('div','tm', pad(d.getHours())+':'+pad(d.getMinutes())));
+    var tx = el('div','tx');
+    tx.innerHTML = e.tx + '<span class="sub">'+e.sub+'</span>';
+    row.appendChild(tx);
+    box.appendChild(row);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   PAINEL DE NOTÍCIAS DO DIA
+   ══════════════════════════════════════════════════════ */
+
+function noticiasDoDia(){
+  var hoje = proximosDias(1)[0];
+  var semSinal = CAMS.filter(function(c){ return c.st === 'off'; });
+  var lotados = 0;
+  HORAS_ACA.forEach(function(h){ if(acaOcupados(hoje, h) >= ACA_LOTACAO) lotados++; });
+  var lav = ocupacaoLav(hoje);
+
+  return [
+    {t:'bad',  h:'05:26', tx:'<b>' + semSinal[0].id + '</b> sem sinal há 2h14 — chamado aberto pelo monitoramento'},
+    {t:'',     h:'07:12', tx:'<b>' + garLivres(hoje) + ' de ' + VAGAS.length + ' vagas</b> livres na garagem'},
+    {t:'',     h:'07:40', tx:'<b>' + cowLivres(hoje, 'tarde') + ' estações</b> livres no coworking à tarde'},
+    {t:'warn', h:'08:03', tx:'<b>Lavadora L06</b> em manutenção — horários bloqueados'},
+    {t:'',     h:'08:15', tx:'<b>' + lav.livres + ' lavadoras</b> livres no bloco das ' + lav.bloco},
+    {t:'',     h:'09:30', tx:'<b>2 encomendas</b> aguardando retirada nos lockers 04 e 07'},
+    {t:'warn', h:'10:05', tx:'<b>Academia</b> com ' + lotados + ' horários lotados hoje'},
+    {t:'bad',  h:'11:00', tx:'<b>Energia</b> — franquia sem medidor individual, leitura do mês pendente'}
+  ];
+}
+
+function pintarTicker(){
+  var run = document.getElementById('tickerRun');
+  run.innerHTML = '';
+  var itens = noticiasDoDia();
+
+  function bloco(dup){
+    var frag = document.createDocumentFragment();
+    itens.forEach(function(n){
+      var i = el('span','tk-i' + (n.t ? ' ' + n.t : '') + (dup ? ' tk-dup' : ''));
+      i.appendChild(el('i','dot'));
+      var s = el('span');
+      s.innerHTML = n.tx;
+      i.appendChild(s);
+      i.appendChild(el('span','sep','◆'));
+      frag.appendChild(i);
+    });
+    return frag;
+  }
+  run.appendChild(bloco(false));
+  run.appendChild(bloco(true));
+}
+
+function abrirBoletim(){
+  var box = document.createElement('div');
+  var lista = el('div','feed-list');
+  noticiasDoDia().forEach(function(n, i){
+    var row = el('div','ev' + (i === 0 ? ' hi' : ''));
+    row.appendChild(el('div','tm', n.h));
+    var tx = el('div','tx');
+    tx.innerHTML = n.tx + '<span class="sub">' + (n.t === 'bad' ? 'exige ação' : n.t === 'warn' ? 'atenção' : 'informação') + '</span>';
+    row.appendChild(tx);
+    lista.appendChild(row);
+  });
+  box.appendChild(lista);
+  box.appendChild(nota('','O que este painel é',
+    '<p>O boletim se monta sozinho a partir do estado do prédio: vagas livres, estações livres, lavadoras, horários lotados e câmeras sem sinal saem das mesmas telas que você acabou de usar. <strong>Reserve alguma coisa e volte aqui — o número muda.</strong></p>'));
+  abrirFolha('Boletim do dia', fmtDataLonga(proximosDias(1)[0]), box);
+}
+
+document.getElementById('ticker').addEventListener('click', abrirBoletim);
+
+function abrirChave(){
+  var box = document.createElement('div');
+  var p = el('p');
+  p.style.cssText = 'font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0 0 16px';
+  p.innerHTML = 'Abre a portaria e o hall pelo aparelho, sem chave física. <strong style="color:var(--ink)">A fechadura eletrônica ainda não foi especificada nem orçada</strong> — o botão abaixo apenas demonstra o fluxo.';
+  box.appendChild(p);
+  var b = el('button','btn','Abrir a portaria');
+  b.type = 'button';
+  b.addEventListener('click', function(){
+    fecharFolha();
+    torrada('Comando registrado.', 'Fluxo de demonstração — nenhuma porta foi aberta');
+  });
+  box.appendChild(b);
+  abrirFolha('Chave digital', 'Acesso · demonstração', box);
+}
+
+/* ══════════════════════════════════════════════════════
+   LAZER
+   ══════════════════════════════════════════════════════ */
+
+function pintarAreas(){
+  var box = document.getElementById('areaList');
+  box.innerHTML = '';
+  AREAS.forEach(function(a){
+    var c = el('div','area');
+    var hd = el('div','hd');
+    hd.appendChild(el('div','nm', a.nm));
+    var p = el('span','pill ' + (a.fonte === 'ok' ? 'ok' : a.fonte === 'pend' ? 'pend' : 'info'));
+    p.textContent = a.fonte === 'ok' ? 'no quantitativo' : a.fonte === 'pend' ? 'a conferir' : 'só conceito';
+    hd.appendChild(p);
+    c.appendChild(hd);
+    c.appendChild(el('div','ds', a.ds));
+    var ft = el('div','ft');
+    ft.appendChild(el('span','cap', a.cap));
+    if(a.reserva){
+      var b = el('button','btn ghost sm','Reservar');
+      b.type = 'button';
+      b.style.marginLeft = 'auto';
+      b.addEventListener('click', function(){ trocarPane('reservas', a.reserva); document.getElementById('views').scrollTop = 0; });
+      ft.appendChild(b);
+    }
+    c.appendChild(ft);
+    box.appendChild(c);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   LAVANDERIA
+   ══════════════════════════════════════════════════════ */
+
+var lavDia = proximosDias(1)[0];
+
+function lavOcupado(dia, maq, hora){
+  if(maq === MAQ_MANUT) return 'dead';
+  if(S.lav[dia+'|'+maq+'|'+hora]) return 'mine';
+  return semente(dia+maq+hora) < 0.34 ? 'busy' : 'free';
+}
+
+function ocupacaoLav(dia){
+  var livres = 0, agoraH = new Date().getHours();
+  var bloco = HORARIOS[0];
+  for(var i=0;i<HORARIOS.length;i++){ if(parseInt(HORARIOS[i],10) <= agoraH) bloco = HORARIOS[i]; }
+  MAQUINAS.forEach(function(m){ if(lavOcupado(dia, m, bloco) === 'free') livres++; });
+  return {livres:livres, bloco:bloco};
+}
+
+function pintarDias(alvoId, selecionado, aoTrocar){
+  var box = document.getElementById(alvoId);
+  box.innerHTML = '';
+  proximosDias(14).forEach(function(dia, i){
+    var d = deIso(dia);
+    var b = el('button','day');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(dia === selecionado));
+    b.appendChild(el('div','dw', i === 0 ? 'hoje' : DIAS_SEM[d.getDay()]));
+    b.appendChild(el('div','dn', String(d.getDate())));
+    b.appendChild(el('div','dm', MESES[d.getMonth()]));
+    b.addEventListener('click', function(){ aoTrocar(dia); });
+    box.appendChild(b);
+  });
+}
+
+function pintarLavanderia(){
+  pintarDias('lavDays', lavDia, function(d){ lavDia = d; pintarLavanderia(); });
+
+  var tb = document.getElementById('lavGrid');
+  tb.innerHTML = '';
+  var thead = el('thead'), trh = el('tr');
+  trh.appendChild(el('th','', ''));
+  HORARIOS.forEach(function(h){ trh.appendChild(el('th','', h)); });
+  thead.appendChild(trh);
+  tb.appendChild(thead);
+
+  var tbody = el('tbody');
+  MAQUINAS.forEach(function(m){
+    var tr = el('tr');
+    var th = el('th','', m);
+    th.scope = 'row';
+    tr.appendChild(th);
+    HORARIOS.forEach(function(h){
+      var td = el('td');
+      var est = lavOcupado(lavDia, m, h);
+      var b = el('button','slot ' + est);
+      b.type = 'button';
+      b.textContent = est === 'mine' ? '✓' : est === 'dead' ? '—' : est === 'busy' ? '·' : h.slice(0,2);
+      b.setAttribute('aria-label', m + ' às ' + h + ' — ' + (est === 'free' ? 'livre' : est === 'mine' ? 'sua reserva' : est === 'dead' ? 'em manutenção' : 'ocupado'));
+      if(est === 'busy' || est === 'dead') b.disabled = true;
+      else b.addEventListener('click', function(){ alternarLav(m, h, est); });
+      td.appendChild(b);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tb.appendChild(tbody);
+}
+
+function alternarLav(maq, hora, est){
+  var k = lavDia+'|'+maq+'|'+hora;
+  if(est === 'mine'){
+    delete S.lav[k];
+    salvar(); pintarLavanderia(); pintarInicio();
+    torrada('Reserva cancelada.', maq + ' · ' + fmtDataLonga(lavDia) + ' às ' + hora);
+  }else{
+    S.lav[k] = true;
+    salvar(); pintarLavanderia(); pintarInicio();
+    torrada('Lavadora reservada.', maq + ' · ' + fmtDataLonga(lavDia) + ' às ' + hora + ' · 1h30', 'good');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   GOURMET
+   ══════════════════════════════════════════════════════ */
+
+var gouDia = proximosDias(1)[0];
+var gouTurno = null;
+
+function gouEstado(dia, turno){
+  if(S.gou[dia+'|'+turno]) return 'mine';
+  return semente('g'+dia+turno) < 0.28 ? 'busy' : 'free';
+}
+
+function pintarGourmet(){
+  pintarDias('gouDays', gouDia, function(d){ gouDia = d; gouTurno = null; pintarGourmet(); });
+
+  var box = document.getElementById('gouTurnos');
+  box.innerHTML = '';
+  TURNOS.forEach(function(t){
+    var est = gouEstado(gouDia, t.id);
+    var b = el('button','turno');
+    b.type = 'button';
+    var left = el('div');
+    left.appendChild(el('div','tn', t.nm));
+    left.appendChild(el('div','th', t.h));
+    b.appendChild(left);
+    var p = el('span','pill ' + (est === 'mine' ? 'gold' : est === 'busy' ? 'no' : 'ok'));
+    p.textContent = est === 'mine' ? 'sua reserva' : est === 'busy' ? 'ocupado' : 'livre';
+    b.appendChild(p);
+    if(est === 'busy'){ b.disabled = true; }
+    else{
+      b.setAttribute('aria-pressed', String(gouTurno === t.id));
+      b.addEventListener('click', function(){
+        if(est === 'mine'){
+          delete S.gou[gouDia+'|'+t.id];
+          salvar(); gouTurno = null; pintarGourmet(); pintarInicio();
+          torrada('Reserva cancelada.', t.nm + ' · ' + fmtDataLonga(gouDia));
+          return;
+        }
+        gouTurno = (gouTurno === t.id) ? null : t.id;
+        pintarGourmet();
+      });
+    }
+    box.appendChild(b);
+  });
+
+  var sel = document.getElementById('gouQtd');
+  if(!sel.options.length){
+    for(var i=2;i<=24;i++){
+      var o = document.createElement('option');
+      o.value = String(i); o.textContent = i + ' pessoas';
+      if(i === 12) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.addEventListener('change', pintarGourmetConta);
+  }
+  pintarGourmetConta();
+
+  var btn = document.getElementById('gouGo');
+  var t = TURNOS.filter(function(x){ return x.id === gouTurno; })[0];
+  var jaMinha = t && gouEstado(gouDia, t.id) === 'mine';
+  btn.disabled = !gouTurno || jaMinha;
+  btn.textContent = !gouTurno ? 'Escolha um turno' : 'Reservar o espaço';
+}
+
+function pintarGourmetConta(){
+  var b = document.getElementById('gouBill');
+  var t = TURNOS.filter(function(x){ return x.id === gouTurno; })[0];
+  var qtd = document.getElementById('gouQtd').value || '—';
+  b.innerHTML = '';
+  var linhas = [
+    ['Data', fmtDataLonga(gouDia)],
+    ['Turno', t ? t.nm + ' · ' + t.h : 'não escolhido'],
+    ['Pessoas', qtd + ' de 24'],
+    ['Taxa de limpeza', 'a definir']
+  ];
+  linhas.forEach(function(l){
+    var r = el('div','row');
+    r.appendChild(el('span','', l[0]));
+    r.appendChild(el('span','v', l[1]));
+    b.appendChild(r);
+  });
+  var tot = el('div','row tot');
+  tot.appendChild(el('span','','A pagar hoje'));
+  tot.appendChild(el('span','v','R$ 0,00'));
+  b.appendChild(tot);
+}
+
+document.getElementById('gouGo').addEventListener('click', function(){
+  if(!gouTurno) return;
+  S.gou[gouDia+'|'+gouTurno] = {qtd: document.getElementById('gouQtd').value};
+  salvar();
+  var t = TURNOS.filter(function(x){ return x.id === gouTurno; })[0];
+  gouTurno = null;
+  pintarGourmet(); pintarInicio();
+  torrada('Espaço gourmet reservado.', t.nm + ' · ' + fmtDataLonga(gouDia) + ' · sem taxa definida', 'good');
+});
+
+/* ══════════════════════════════════════════════════════
+   ESTADIA — TEMPORADA
+   ══════════════════════════════════════════════════════ */
+
+function diaria(p){ return p.preco / 30 * FATOR_DIARIA; }
+
+var tmpProd = 'smart';
+
+function pintarProdutos(alvoId, selecionado, modo, aoTrocar){
+  var box = document.getElementById(alvoId);
+  box.innerHTML = '';
+  PRODUTOS.forEach(function(p){
+    var b = el('button','prod');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(p.id === selecionado));
+
+    var top = el('div','top');
+    top.appendChild(el('div','nm', p.nome));
+    var pr = el('div','pr');
+    pr.appendChild(document.createTextNode(modo === 'diaria' ? brl(diaria(p)) : brl0(p.preco)));
+    pr.appendChild(el('small','', modo === 'diaria' ? 'por noite · derivado' : 'por mês'));
+    top.appendChild(pr);
+    b.appendChild(top);
+
+    b.appendChild(el('div','ds', p.ds));
+    b.appendChild(el('div','av', p.tip + ' · ' + p.un + (p.un > 1 ? ' unidades' : ' unidade') + ' no prédio'));
+
+    b.addEventListener('click', function(){ aoTrocar(p.id); });
+    box.appendChild(b);
+  });
+}
+
+function noites(){
+  var a = document.getElementById('tin').value, b = document.getElementById('tout').value;
+  if(!a || !b) return 0;
+  var d = Math.round((deIso(b) - deIso(a)) / 86400000);
+  return d > 0 ? d : 0;
+}
+
+function pintarTemporada(){
+  pintarProdutos('tmpProds', tmpProd, 'diaria', function(id){ tmpProd = id; pintarTemporada(); });
+
+  var inp = document.getElementById('tin'), out = document.getElementById('tout');
+  if(!inp.value){
+    var dias = proximosDias(9);
+    inp.value = dias[2]; out.value = dias[7];
+  }
+  inp.min = proximosDias(1)[0];
+  out.min = inp.value;
+
+  var selH = document.getElementById('thos');
+  var prod = PRODUTOS.filter(function(p){ return p.id === tmpProd; })[0];
+  var max = prod.quartos * 2;
+  selH.innerHTML = '';
+  for(var i=1;i<=max;i++){
+    var o = document.createElement('option');
+    o.value = String(i); o.textContent = i + (i > 1 ? ' hóspedes' : ' hóspede');
+    if(i === Math.min(2, max)) o.selected = true;
+    selH.appendChild(o);
+  }
+
+  var n = noites();
+  var d = diaria(prod);
+  var bill = document.getElementById('tmpBill');
+  bill.innerHTML = '';
+  var linhas = [
+    ['Unidade', prod.nome + ' · ' + prod.tip, false],
+    ['Preço mensal decidido', brl0(prod.preco), false],
+    ['÷ 30 noites', brl(prod.preco/30), true],
+    ['× fator de curta estadia 1,9', brl(d), true],
+    ['Noites', n ? (fmtData(inp.value) + ' → ' + fmtData(out.value) + ' · ' + n) : 'escolha as datas', false],
+    ['Limpeza final', 'a definir', false]
+  ];
+  linhas.forEach(function(l){
+    var r = el('div','row' + (l[2] ? ' calc' : ''));
+    r.appendChild(el('span','', l[0]));
+    r.appendChild(el('span','v', l[1]));
+    bill.appendChild(r);
+  });
+  var tot = el('div','row tot');
+  tot.appendChild(el('span','','Total da estadia'));
+  tot.appendChild(el('span','v', n ? brl(d*n) : '—'));
+  bill.appendChild(tot);
+
+  var go = document.getElementById('tmpGo');
+  go.disabled = !n;
+  go.textContent = n ? 'Solicitar ' + n + (n > 1 ? ' noites' : ' noite') : 'Escolha as datas';
+}
+
+document.getElementById('tin').addEventListener('change', function(){
+  var out = document.getElementById('tout');
+  if(out.value && deIso(out.value) <= deIso(this.value)){
+    var d = deIso(this.value); d.setDate(d.getDate()+1); out.value = iso(d);
+  }
+  pintarTemporada();
+});
+document.getElementById('tout').addEventListener('change', pintarTemporada);
+document.getElementById('thos').addEventListener('change', pintarTemporada);
+
+document.getElementById('tmpGo').addEventListener('click', function(){
+  var n = noites();
+  if(!n) return;
+  var prod = PRODUTOS.filter(function(p){ return p.id === tmpProd; })[0];
+  var inp = document.getElementById('tin').value, out = document.getElementById('tout').value;
+  var prot = 'VM7M-' + String(1000 + S.estadia.length + Math.floor(semente(inp+out+prod.id)*800));
+  S.estadia.push({
+    tipo:'temporada', prod:prod.id, nome:prod.nome, de:inp, ate:out,
+    noites:n, total:diaria(prod)*n, hospedes:document.getElementById('thos').value, prot:prot
+  });
+  salvar(); pintarInicio(); pintarMinhasReservas(document.getElementById('homeRes'));
+  torrada('Reserva solicitada · ' + prot, prod.nome + ' · ' + n + ' noites · ' + brl(diaria(prod)*n), 'good');
+});
+
+/* ══════════════════════════════════════════════════════
+   ESTADIA — MORADIA
+   ══════════════════════════════════════════════════════ */
+
+var morProd = 'smart';
+var morPlano = 'letivo';
+
+function pintarMoradia(){
+  pintarProdutos('morProds', morProd, 'mes', function(id){ morProd = id; pintarMoradia(); });
+
+  var box = document.getElementById('morPlanos');
+  box.innerHTML = '';
+  PLANOS.forEach(function(pl){
+    var b = el('button','turno');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(pl.id === morPlano));
+    var left = el('div');
+    left.appendChild(el('div','tn', pl.nm));
+    left.appendChild(el('div','th', pl.ds));
+    b.appendChild(left);
+    var p = el('span','pill info');
+    p.textContent = pl.meses + ' meses';
+    b.appendChild(p);
+    b.addEventListener('click', function(){ morPlano = pl.id; pintarMoradia(); });
+    box.appendChild(b);
+  });
+
+  var prod = PRODUTOS.filter(function(p){ return p.id === morProd; })[0];
+  var pl = PLANOS.filter(function(p){ return p.id === morPlano; })[0];
+  var porMorador = prod.preco / prod.quartos;
+
+  var bill = document.getElementById('morBill');
+  bill.innerHTML = '';
+  var linhas = [
+    ['Unidade', prod.nome + ' · ' + prod.tip, false],
+    ['Mensalidade', brl0(prod.preco), false],
+    ['Por morador, se dividido', brl0(porMorador) + (prod.quartos > 1 ? '' : ' (sozinho)'), true],
+    ['Plano', pl.nm + ' · ' + pl.meses + ' meses', false],
+    ['Caução', 'a definir', false]
+  ];
+  linhas.forEach(function(l){
+    var r = el('div','row' + (l[2] ? ' calc' : ''));
+    r.appendChild(el('span','', l[0]));
+    r.appendChild(el('span','v', l[1]));
+    bill.appendChild(r);
+  });
+  var tot = el('div','row tot');
+  tot.appendChild(el('span','','Total do contrato'));
+  tot.appendChild(el('span','v', brl0(prod.preco * pl.meses)));
+  bill.appendChild(tot);
+}
+
+document.getElementById('morGo').addEventListener('click', function(){
+  var prod = PRODUTOS.filter(function(p){ return p.id === morProd; })[0];
+  var pl = PLANOS.filter(function(p){ return p.id === morPlano; })[0];
+  var prot = 'VM7M-M' + String(400 + S.estadia.length * 7);
+  S.estadia.push({
+    tipo:'moradia', prod:prod.id, nome:prod.nome, meses:pl.meses,
+    plano:pl.nm, total:prod.preco*pl.meses, prot:prot
+  });
+  salvar(); pintarInicio(); pintarMinhasReservas(document.getElementById('homeRes'));
+  torrada('Unidade reservada · ' + prot, prod.nome + ' · ' + pl.nm + ' · ' + brl0(prod.preco) + '/mês', 'good');
+});
+
+function pintarIncluso(){
+  var box = document.getElementById('incList');
+  box.innerHTML = '';
+  INCLUSO.forEach(function(txt, i){
+    var c = el('div','area');
+    c.style.padding = '11px 14px';
+    var hd = el('div','hd');
+    var nm = el('div','nm', txt);
+    nm.style.fontSize = '13.5px';
+    nm.style.fontWeight = '400';
+    hd.appendChild(nm);
+    if(i === 3){
+      var p = el('span','pill pend');
+      p.textContent = 'com franquia';
+      hd.appendChild(p);
+    }
+    c.appendChild(hd);
+    box.appendChild(c);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   ACADEMIA
+   ══════════════════════════════════════════════════════ */
+
+var acaDia = proximosDias(1)[0];
+
+function acaOcupados(dia, h){
+  var base = Math.floor(semente('a'+dia+h) * ACA_LOTACAO);
+  return base + (S.aca[dia+'|'+h] ? 1 : 0);
+}
+
+function pintarAcademia(){
+  pintarDias('acaDays', acaDia, function(d){ acaDia = d; pintarAcademia(); });
+  var box = document.getElementById('acaHours');
+  box.innerHTML = '';
+  HORAS_ACA.forEach(function(h){
+    var minha = !!S.aca[acaDia+'|'+h];
+    var ocup = acaOcupados(acaDia, h);
+    var cheio = ocup >= ACA_LOTACAO && !minha;
+    var b = el('button','hr');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(minha));
+    b.setAttribute('aria-label', h + ' — ' + ocup + ' de ' + ACA_LOTACAO + (minha ? ', sua reserva' : cheio ? ', lotado' : ''));
+    b.appendChild(el('div','h', h));
+    var tr = el('div','track');
+    var fl = el('div','fill' + (minha ? ' mine' : cheio ? ' full' : ''));
+    fl.style.width = Math.min(100, ocup / ACA_LOTACAO * 100).toFixed(0) + '%';
+    tr.appendChild(fl);
+    b.appendChild(tr);
+    b.appendChild(el('div','cnt', minha ? 'você · ' + ocup + '/' + ACA_LOTACAO : ocup + '/' + ACA_LOTACAO));
+    if(cheio) b.disabled = true;
+    else b.addEventListener('click', function(){
+      var k = acaDia+'|'+h;
+      if(S.aca[k]){
+        delete S.aca[k];
+        torrada('Reserva cancelada.', 'Academia · ' + fmtDataLonga(acaDia) + ' às ' + h);
+      }else{
+        S.aca[k] = true;
+        torrada('Academia reservada.', fmtDataLonga(acaDia) + ' às ' + h + ' · 1 hora', 'good');
+      }
+      salvar(); pintarAcademia(); pintarInicio();
+    });
+    box.appendChild(b);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   COWORKING
+   ══════════════════════════════════════════════════════ */
+
+var cowDia = proximosDias(1)[0];
+var cowTurno = 'manha';
+
+function cowEstado(dia, turno, n){
+  if(S.cow[dia+'|'+turno] === n) return 'mine';
+  return semente('c'+dia+turno+n) < 0.42 ? 'busy' : 'free';
+}
+
+function cowLivres(dia, turno){
+  var n = 0;
+  for(var i=1;i<=COW_ESTACOES;i++){ if(cowEstado(dia, turno, i) === 'free') n++; }
+  return n;
+}
+
+function pintarCoworking(){
+  pintarDias('cowDays', cowDia, function(d){ cowDia = d; pintarCoworking(); });
+
+  var box = document.getElementById('cowTurnos');
+  box.innerHTML = '';
+  COW_TURNOS.forEach(function(t){
+    var b = el('button','turno');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(t.id === cowTurno));
+    var left = el('div');
+    left.appendChild(el('div','tn', t.nm));
+    left.appendChild(el('div','th', t.h));
+    b.appendChild(left);
+    var minha = S.cow[cowDia+'|'+t.id];
+    var p = el('span','pill ' + (minha ? 'gold' : 'info'));
+    p.textContent = minha ? 'estação ' + minha : cowLivres(cowDia, t.id) + ' livres';
+    b.appendChild(p);
+    b.addEventListener('click', function(){ cowTurno = t.id; pintarCoworking(); });
+    box.appendChild(b);
+  });
+
+  var g = document.getElementById('cowDesks');
+  g.innerHTML = '';
+  for(var i=1;i<=COW_ESTACOES;i++){
+    (function(n){
+      var est = cowEstado(cowDia, cowTurno, n);
+      var b = el('button','desk ' + est, String(n));
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Estação ' + n + ' — ' + (est === 'free' ? 'livre' : est === 'mine' ? 'sua' : 'ocupada'));
+      if(est === 'busy') b.disabled = true;
+      else b.addEventListener('click', function(){
+        var k = cowDia+'|'+cowTurno;
+        var t = COW_TURNOS.filter(function(x){ return x.id === cowTurno; })[0];
+        if(S.cow[k] === n){
+          delete S.cow[k];
+          torrada('Estação liberada.', 'Coworking · ' + fmtDataLonga(cowDia) + ' · ' + t.nm);
+        }else{
+          S.cow[k] = n;
+          torrada('Estação ' + n + ' reservada.', fmtDataLonga(cowDia) + ' · ' + t.nm + ' · ' + t.h, 'good');
+        }
+        salvar(); pintarCoworking(); pintarInicio();
+      });
+      g.appendChild(b);
+    })(i);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   GARAGEM
+   ══════════════════════════════════════════════════════ */
+
+var garDia = proximosDias(1)[0];
+
+function garEstado(dia, v){
+  if(S.gar[dia] === v) return 'mine';
+  return semente('v'+dia+v) < 0.5 ? 'busy' : 'free';
+}
+
+function garLivres(dia){
+  var n = 0;
+  VAGAS.forEach(function(v){ if(garEstado(dia, v) === 'free') n++; });
+  return n;
+}
+
+function pintarGaragem(){
+  pintarDias('garDays', garDia, function(d){ garDia = d; pintarGaragem(); });
+  var g = document.getElementById('garMapa');
+  g.innerHTML = '';
+  VAGAS.forEach(function(v, i){
+    if(i === 5) g.appendChild(el('div','lane'));
+    var est = garEstado(garDia, v);
+    var b = el('button','vaga ' + est);
+    b.type = 'button';
+    b.appendChild(el('div','vn', v));
+    b.appendChild(el('div','vs', est === 'free' ? 'livre' : est === 'mine' ? 'sua' : 'ocupada'));
+    b.setAttribute('aria-label', 'Vaga ' + v + ' — ' + (est === 'free' ? 'livre' : est === 'mine' ? 'sua' : 'ocupada'));
+    if(est === 'busy') b.disabled = true;
+    else b.addEventListener('click', function(){
+      if(S.gar[garDia] === v){
+        delete S.gar[garDia];
+        torrada('Vaga liberada.', v + ' · ' + fmtDataLonga(garDia));
+      }else{
+        S.gar[garDia] = v;
+        torrada('Vaga ' + v + ' reservada.', fmtDataLonga(garDia) + ' · sem preço definido', 'good');
+      }
+      salvar(); pintarGaragem(); pintarInicio();
+    });
+    g.appendChild(b);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   SERVIÇOS
+   ══════════════════════════════════════════════════════ */
+
+function pintarServicos(){
+  var box = document.getElementById('svcList');
+  box.innerHTML = '';
+  SERVICOS.forEach(function(s){
+    var b = el('button','svc');
+    b.type = 'button';
+    b.innerHTML = '<svg class="ic" viewBox="0 0 24 24">'+s.ic+'</svg>';
+    var mid = el('div');
+    mid.appendChild(el('div','nm', s.nm));
+    mid.appendChild(el('div','ds', s.ds));
+    mid.appendChild(el('div','tag ' + (s.modelo === 'terc' ? 'terc' : 'casa'),
+      s.modelo === 'terc' ? 'terceiro · vira aluguel' : 'casa · vira custo'));
+    b.appendChild(mid);
+    b.appendChild(el('div','ar','›'));
+    b.addEventListener('click', function(){ abrirServico(s); });
+    box.appendChild(b);
+  });
+}
+
+function selDias(id, n){
+  var s = document.createElement('select');
+  s.id = id;
+  proximosDias(n).forEach(function(d, i){
+    var o = document.createElement('option');
+    o.value = d;
+    o.textContent = i === 0 ? 'Hoje, ' + fmtData(d) : fmtDataLonga(d);
+    s.appendChild(o);
+  });
+  return s;
+}
+
+function campo(rotulo, controle, largo){
+  var f = el('div','fld' + (largo ? ' wide' : ''));
+  var l = el('label','', rotulo);
+  if(controle.id) l.htmlFor = controle.id;
+  f.appendChild(l);
+  f.appendChild(controle);
+  return f;
+}
+
+function selOpcoes(id, lista){
+  var s = document.createElement('select');
+  s.id = id;
+  lista.forEach(function(x){
+    var o = document.createElement('option');
+    o.value = x[0]; o.textContent = x[1];
+    s.appendChild(o);
+  });
+  return s;
+}
+
+function codigo(sem){
+  return String(100000 + Math.floor(semente(sem) * 899999));
+}
+
+function nota(tipo, titulo, html){
+  var n = el('div','note ' + tipo);
+  n.innerHTML = '<span class="lbl">'+titulo+'</span>'+html;
+  return n;
+}
+
+function abrirServico(s){
+  if(s.id === 'limpeza') return svcLimpeza();
+  if(s.id === 'impressao') return svcImpressao();
+  if(s.id === 'notebook') return svcNotebook();
+  if(s.id === 'maquinas') return svcMaquinas();
+  if(s.id === 'entregas') return svcEntregas();
+  if(s.id === 'visitante') return svcVisitante();
+  if(s.id === 'pagamentos') return svcPagamentos();
+}
+
+/* ── limpeza ── */
+function svcLimpeza(){
+  var box = document.createElement('div');
+  var escolha = {tipo:'rapida'};
+
+  var lista = el('div','turnos');
+  LIMPEZAS.forEach(function(l){
+    var b = el('button','turno');
+    b.type = 'button';
+    b.dataset.tipo = l.id;
+    b.setAttribute('aria-pressed', String(l.id === escolha.tipo));
+    var left = el('div');
+    left.appendChild(el('div','tn', l.nm));
+    left.appendChild(el('div','th', l.ds));
+    b.appendChild(left);
+    var p = el('span','pill info','a cotar');
+    b.appendChild(p);
+    b.addEventListener('click', function(){
+      escolha.tipo = l.id;
+      var bs = lista.querySelectorAll('.turno');
+      for(var i=0;i<bs.length;i++) bs[i].setAttribute('aria-pressed', String(bs[i].dataset.tipo === l.id));
+    });
+    lista.appendChild(b);
+  });
+  box.appendChild(lista);
+
+  var campos = el('div','fields');
+  campos.style.marginTop = '16px';
+  campos.appendChild(campo('Dia', selDias('limpDia', 14), true));
+  campos.appendChild(campo('Turno', selOpcoes('limpTurno', [['manha','Manhã · 08h às 12h'],['tarde','Tarde · 13h às 17h']]), true));
+  box.appendChild(campos);
+
+  var b = el('button','btn','Pedir limpeza');
+  b.type = 'button';
+  b.style.marginTop = '16px';
+  b.addEventListener('click', function(){
+    var dia = document.getElementById('limpDia').value;
+    var t = LIMPEZAS.filter(function(x){ return x.id === escolha.tipo; })[0];
+    S.svc.push({tipo:'limpeza', nm:'Limpeza ' + t.nm.toLowerCase(), quando:dia, ds:fmtDataLonga(dia)});
+    salvar(); pintarInicio();
+    fecharFolha();
+    torrada('Limpeza pedida.', t.nm + ' · ' + fmtDataLonga(dia) + ' · sem preço cotado', 'good');
+  });
+  box.appendChild(b);
+
+  box.appendChild(nota('warn','Sem preço porque não foi cotado',
+    '<p>Limpeza, lavanderia e enxoval são justamente os itens que faltam para precificar os níveis de serviço da linha de produtos. <strong>É a mesma cotação que destrava o eixo Essencial, Conforto e Premium</strong> da matriz — e ela ainda não foi feita.</p>'));
+
+  abrirFolha('Limpeza do apartamento', 'Serviço · operado por terceiro', box);
+}
+
+/* ── impressão ── */
+function svcImpressao(){
+  var box = document.createElement('div');
+  var campos = el('div','fields');
+  campos.appendChild(campo('Cor', selOpcoes('impCor', [['pb','Preto e branco'],['cor','Colorido']]), false));
+  campos.appendChild(campo('Páginas', selOpcoes('impPag', [['1','1'],['5','5'],['10','10'],['20','20'],['50','50']]), false));
+  campos.appendChild(campo('Retirada', selOpcoes('impLocal', [['cow','Impressora do coworking'],['rec','Recepção']]), true));
+  box.appendChild(campos);
+
+  var b = el('button','btn','Mandar para a fila');
+  b.type = 'button';
+  b.style.marginTop = '16px';
+  b.addEventListener('click', function(){
+    var pag = document.getElementById('impPag').value;
+    var cod = codigo('imp'+pag+Date.now().toString().slice(-4));
+    S.svc.push({tipo:'impressao', nm:'Impressão · ' + pag + ' páginas', ds:'código ' + cod});
+    salvar(); pintarInicio();
+    fecharFolha();
+    torrada('Trabalho na fila.', 'Código ' + cod + ' · retire na impressora do coworking', 'good');
+  });
+  box.appendChild(b);
+
+  box.appendChild(nota('bad','O que falta para isto funcionar de verdade',
+    '<p>O envio do arquivo depende de uma integração que não existe, e o preço por página depende de um contrato de outsourcing de impressão que não foi cotado. <strong>Aqui o aplicativo só demonstra o fluxo e o código de retirada.</strong></p>'));
+
+  abrirFolha('Impressão', 'Serviço · operado pela casa', box);
+}
+
+/* ── notebook ── */
+function svcNotebook(){
+  var box = document.createElement('div');
+  var dia = proximosDias(1)[0];
+  var livres = 0;
+  for(var i=1;i<=NOTEBOOKS;i++){ if(semente('nb'+dia+i) > 0.4) livres++; }
+
+  var t = el('div','tiles');
+  [{k:'Aparelhos',v:String(NOTEBOOKS),u:'previstos no conceito'},
+   {k:'Livres hoje',v:String(livres),u:'simulação'}].forEach(function(d){
+    var c = el('div','tile');
+    c.appendChild(el('div','k', d.k));
+    c.appendChild(el('div','v g', d.v));
+    c.appendChild(el('div','u', d.u));
+    t.appendChild(c);
+  });
+  box.appendChild(t);
+
+  var campos = el('div','fields');
+  campos.style.marginTop = '16px';
+  campos.appendChild(campo('Retirada', selDias('nbDia', 14), false));
+  campos.appendChild(campo('Período', selOpcoes('nbPer', [['dia','Diária'],['sem','Semana']]), false));
+  box.appendChild(campos);
+
+  var b = el('button','btn','Reservar notebook');
+  b.type = 'button';
+  b.style.marginTop = '16px';
+  b.disabled = livres === 0;
+  b.addEventListener('click', function(){
+    var d = document.getElementById('nbDia').value;
+    var per = document.getElementById('nbPer').value === 'dia' ? 'diária' : 'semana';
+    S.svc.push({tipo:'notebook', nm:'Notebook · ' + per, quando:d, ds:'retirada ' + fmtDataLonga(d)});
+    salvar(); pintarInicio();
+    fecharFolha();
+    torrada('Notebook reservado.', 'Retirada na recepção · ' + fmtDataLonga(d) + ' · sem preço definido', 'good');
+  });
+  box.appendChild(b);
+
+  box.appendChild(nota('bad','Nenhum aparelho foi comprado',
+    '<p>Os 4 notebooks são conceito. Não há equipamento adquirido, nem contrato de locação, nem seguro contra perda e dano — que é o que costuma matar este serviço. <strong>Arrendado a um operador, ele vira aluguel; comprado pela casa, vira imobilizado e risco.</strong></p>'));
+
+  abrirFolha('Aluguel de notebook', 'Serviço · operado por terceiro', box);
+}
+
+/* ── máquinas ── */
+function svcMaquinas(){
+  var box = document.createElement('div');
+  var p = el('p');
+  p.style.cssText = 'font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0 0 14px';
+  p.innerHTML = '<strong style="color:var(--ink)">3 máquinas</strong> no térreo, confirmadas na extração do modelo BIM de 10/08/2026. O aplicativo abre a máquina e lança o consumo no extrato.';
+  box.appendChild(p);
+
+  var g = el('div','vend');
+  VEND_ITENS.forEach(function(it){
+    var c = el('div','vi');
+    c.appendChild(el('div','nm', it));
+    c.appendChild(el('div','pr','preço do operador'));
+    g.appendChild(c);
+  });
+  box.appendChild(g);
+
+  var b = el('button','btn ghost','Abrir a máquina pelo aplicativo');
+  b.type = 'button';
+  b.style.marginTop = '16px';
+  b.addEventListener('click', function(){
+    torrada('Sem integração com a máquina.', 'Depende do operador e do meio de pagamento — não contratados');
+  });
+  box.appendChild(b);
+
+  box.appendChild(nota('good','Por que isto é bom para o investidor',
+    '<p>Máquina de conveniência não é receita nova: <strong>é custo que sai da folha.</strong> Bebida, café e lanche viram problema do operador, e a M7M recebe aluguel do espaço. É a transferência de risco da camada 2, aplicada no menor item possível.</p>'));
+
+  abrirFolha('Máquinas de conveniência', '3 máquinas · operadas por terceiro', box);
+}
+
+/* ── entregas ── */
+function svcEntregas(){
+  var box = document.createElement('div');
+
+  var lista = el('div','feed-list');
+  lista.innerHTML =
+    '<div class="ev hi"><div class="tm">L04</div><div class="tx"><b>Pacote aguardando</b><span class="sub">guardado ontem · código '+codigo('lk04')+'</span></div></div>' +
+    '<div class="ev"><div class="tm">L07</div><div class="tx"><b>Pacote aguardando</b><span class="sub">guardado hoje · código '+codigo('lk07')+'</span></div></div>';
+  box.appendChild(lista);
+
+  var h = el('h3','sec','O que você quer fazer');
+  box.appendChild(h);
+
+  var acoes = el('div','turnos');
+  [
+    ['Avisar que espero uma entrega','A recepção recebe e guarda no locker','espero'],
+    ['Retirar do locker','Usa o código do aviso','retirar'],
+    ['Deixar para coleta','Você entrega na recepção e a transportadora busca','coleta']
+  ].forEach(function(a){
+    var b = el('button','turno');
+    b.type = 'button';
+    var left = el('div');
+    left.appendChild(el('div','tn', a[0]));
+    left.appendChild(el('div','th', a[1]));
+    b.appendChild(left);
+    b.appendChild(el('div','ar','›'));
+    b.addEventListener('click', function(){
+      if(a[2] === 'espero'){
+        S.svc.push({tipo:'entrega', nm:'Entrega esperada', ds:'recepção avisada'});
+        salvar(); pintarInicio(); fecharFolha();
+        torrada('Recepção avisada.', 'O pacote vai para o locker e você recebe o código', 'good');
+      }else if(a[2] === 'retirar'){
+        fecharFolha();
+        torrada('Código do locker 04: ' + codigo('lk04') + '.', 'Válido por 24 horas');
+      }else{
+        S.svc.push({tipo:'coleta', nm:'Coleta na recepção', ds:'aguardando transportadora'});
+        salvar(); pintarInicio(); fecharFolha();
+        torrada('Coleta registrada.', 'Leve o volume à recepção · sem transportadora contratada', 'good');
+      }
+    });
+    acoes.appendChild(b);
+  });
+  box.appendChild(acoes);
+
+  box.appendChild(nota('warn','O que sustenta esta tela',
+    '<p>Locker inteligente não está orçado. Sem ele, quem guarda é o porteiro e o aplicativo só avisa — que é exatamente o que esta tela faz. <strong>O custo de portaria 24h, que torna isso possível, também não está em nenhuma planilha.</strong></p>'));
+
+  abrirFolha('Entregas e coletas', '2 pacotes aguardando', box);
+}
+
+/* ── visitante ── */
+function svcVisitante(){
+  var box = document.createElement('div');
+  var quer = {vaga:false};
+
+  var campos = el('div','fields');
+  var nome = document.createElement('input');
+  nome.type = 'text'; nome.id = 'visNome'; nome.placeholder = 'Nome do visitante';
+  nome.autocomplete = 'off';
+  campos.appendChild(campo('Quem vem', nome, true));
+  campos.appendChild(campo('Dia', selDias('visDia', 14), false));
+  campos.appendChild(campo('Período', selOpcoes('visPer', [['manha','Manhã'],['tarde','Tarde'],['noite','Noite'],['dia','Dia inteiro']]), false));
+  var placa = document.createElement('input');
+  placa.type = 'text'; placa.id = 'visPlaca'; placa.placeholder = 'Opcional';
+  placa.autocomplete = 'off';
+  campos.appendChild(campo('Placa do carro', placa, true));
+  box.appendChild(campos);
+
+  var tv = el('button','turno');
+  tv.type = 'button';
+  tv.style.marginTop = '16px';
+  tv.setAttribute('aria-pressed','false');
+  var left = el('div');
+  left.appendChild(el('div','tn','Reservar vaga na garagem'));
+  left.appendChild(el('div','th', garLivres(proximosDias(1)[0]) + ' vagas livres hoje'));
+  tv.appendChild(left);
+  var pv = el('span','pill info','não');
+  tv.appendChild(pv);
+  tv.addEventListener('click', function(){
+    quer.vaga = !quer.vaga;
+    tv.setAttribute('aria-pressed', String(quer.vaga));
+    pv.className = 'pill ' + (quer.vaga ? 'gold' : 'info');
+    pv.textContent = quer.vaga ? 'sim' : 'não';
+  });
+  box.appendChild(tv);
+
+  var b = el('button','btn','Gerar convite');
+  b.type = 'button';
+  b.style.marginTop = '16px';
+  b.addEventListener('click', function(){
+    var n = (document.getElementById('visNome').value || '').trim();
+    if(!n){
+      torrada('Falta o nome do visitante.', 'A portaria confere o nome na entrada', 'bad');
+      document.getElementById('visNome').focus();
+      return;
+    }
+    var dia = document.getElementById('visDia').value;
+    var per = document.getElementById('visPer').options[document.getElementById('visPer').selectedIndex].text;
+    var cod = codigo(n + dia + per);
+    var vagaTxt = '';
+    if(quer.vaga){
+      var livre = VAGAS.filter(function(v){ return garEstado(dia, v) === 'free'; })[0];
+      vagaTxt = livre ? livre : '';
+    }
+    S.visitas.push({nome:n, dia:dia, per:per, cod:cod, vaga:vagaTxt});
+    salvar(); pintarInicio();
+
+    var res = document.createElement('div');
+    var c = el('div','code');
+    c.appendChild(el('div','k','Código de entrada'));
+    c.appendChild(el('div','v', cod));
+    c.appendChild(el('div','u', n + ' · ' + fmtDataLonga(dia) + ' · ' + per + (vagaTxt ? ' · vaga ' + vagaTxt : '')));
+    res.appendChild(c);
+    res.appendChild(nota('good','Como a portaria usa',
+      '<p>O visitante diz o código, o porteiro confere o nome e o documento na entrada. <strong>O documento não é digitado nem guardado no aplicativo</strong> — nada além do nome e do dia sai deste aparelho.</p>'));
+    res.appendChild(nota('warn','Ainda não existe',
+      '<p>Leitura automática de placa, catraca e fechadura eletrônica dependem de equipamento não especificado. Hoje o convite é uma lista que o porteiro confere no aplicativo dele.</p>'));
+    abrirFolha('Convite gerado', n + ' · ' + fmtData(dia), res);
+    torrada('Convite gerado · ' + cod, n + ' · ' + fmtDataLonga(dia) + (vagaTxt ? ' · vaga ' + vagaTxt : ''), 'good');
+  });
+  box.appendChild(b);
+
+  abrirFolha('Convite de visitante', 'Acesso · operado pela casa', box);
+}
+
+/* ── pagamentos ── */
+function svcPagamentos(){
+  var box = document.createElement('div');
+
+  var reservasMes = contarReservas();
+  var w = el('div','wallet');
+  [
+    ['Mensalidade', 'nenhum contrato assinado', 'R$ 0,00', true],
+    ['Reservas do mês', reservasMes + (reservasMes === 1 ? ' reserva · áreas comuns sem taxa' : ' reservas · áreas comuns sem taxa'), 'R$ 0,00', true],
+    ['Consumo em máquinas', 'faturado pelo operador, não pela casa', '—', true],
+    ['Serviços pedidos', S.svc.length + ' pedido' + (S.svc.length === 1 ? '' : 's') + ' · nenhum cotado', 'a definir', true],
+    ['Energia acima da franquia', 'sem medidor individual instalado', 'não medido', true]
+  ].forEach(function(r){
+    var row = el('div','wr');
+    var left = el('div');
+    left.appendChild(el('div','nm', r[0]));
+    left.appendChild(el('div','sb', r[1]));
+    row.appendChild(left);
+    row.appendChild(el('div','v' + (r[3] ? ' zero' : ''), r[2]));
+    w.appendChild(row);
+  });
+  box.appendChild(w);
+
+  /* ── pagamento em dias ── */
+  box.appendChild(el('h3','sec','Pagar em dias'));
+  var pd = el('p');
+  pd.style.cssText = 'font-size:13px;color:var(--ink-3);line-height:1.5;margin:0 0 14px';
+  pd.textContent = 'Divide o valor em parcelas diárias, com a data de cada uma. Útil para estudante que recebe semanal e para hóspede de temporada.';
+  box.appendChild(pd);
+
+  var alvos = [];
+  PRODUTOS.forEach(function(p){ alvos.push(['m:'+p.id, 'Mensalidade ' + p.nome + ' · ' + brl0(p.preco)]); });
+  S.estadia.forEach(function(r, i){
+    alvos.push(['e:'+i, r.nome + ' · ' + (r.tipo === 'temporada' ? r.noites + ' noites' : r.plano) + ' · ' + brl0(r.total)]);
+  });
+
+  var selAlvo = selOpcoes('pgAlvo', alvos);
+  var selQtdDias = selOpcoes('pgDias', [['7','7 dias'],['10','10 dias'],['15','15 dias'],['30','30 dias']]);
+
+  var campos = el('div','fields');
+  campos.appendChild(campo('O que pagar', selAlvo, true));
+  campos.appendChild(campo('Em quantos dias', selQtdDias, true));
+  box.appendChild(campos);
+
+  var saida = el('div');
+  box.appendChild(saida);
+
+  function valorAlvo(){
+    var v = selAlvo.value;
+    if(v.charAt(0) === 'm'){
+      var p = PRODUTOS.filter(function(x){ return x.id === v.slice(2); })[0];
+      return p ? p.preco : 0;
+    }
+    var r = S.estadia[parseInt(v.slice(2), 10)];
+    return r ? r.total : 0;
+  }
+
+  function pintarCarne(){
+    var total = valorAlvo();
+    var n = parseInt(selQtdDias.value, 10);
+    var parcela = total / n;
+    saida.innerHTML = '';
+
+    var c = el('div','carne');
+    var mostrar = Math.min(n, 8);
+    var base = new Date();
+    base.setHours(0,0,0,0);
+    for(var i=0;i<mostrar;i++){
+      var d = new Date(base.getTime());
+      d.setDate(d.getDate() + i);
+      var row = el('div','cr' + (i === 0 ? ' hoje' : ''));
+      row.appendChild(el('div','n', pad(i+1) + '/' + pad(n)));
+      row.appendChild(el('div','d', i === 0 ? 'hoje, ' + fmtData(iso(d)) : fmtDataLonga(iso(d))));
+      row.appendChild(el('div','v', brl(parcela)));
+      c.appendChild(row);
+    }
+    if(n > mostrar){
+      var ult = new Date(base.getTime());
+      ult.setDate(ult.getDate() + n - 1);
+      var mais = el('div','cr mais','mais ' + (n - mostrar) + ' dias, até ' + fmtDataLonga(iso(ult)));
+      c.appendChild(mais);
+    }
+    saida.appendChild(c);
+
+    var b = el('div','bill');
+    b.style.marginTop = '14px';
+    [['Total', brl(total)], ['Parcelas', n + ' × ' + brl(parcela)], ['Custo por transação', n + ' cobranças · não orçado']].forEach(function(l){
+      var r = el('div','row');
+      r.appendChild(el('span','', l[0]));
+      r.appendChild(el('span','v', l[1]));
+      b.appendChild(r);
+    });
+    saida.appendChild(b);
+
+    var g = el('button','btn','Gerar carnê de ' + n + ' dias');
+    g.type = 'button';
+    g.style.marginTop = '14px';
+    g.addEventListener('click', function(){
+      S.svc.push({tipo:'carne', nm:'Carnê de ' + n + ' dias', ds:n + ' × ' + brl(parcela)});
+      salvar(); pintarInicio();
+      fecharFolha();
+      torrada('Carnê gerado.', n + ' parcelas de ' + brl(parcela) + ' · sem meio de pagamento integrado', 'good');
+    });
+    saida.appendChild(g);
+
+    saida.appendChild(nota('bad','A conta que o parcelamento diário esconde',
+      '<p>Cada cobrança tem custo. <strong>Parcelar em ' + n + ' dias multiplica por ' + n + ' o custo por transação de um único contrato</strong> — e com 19 apartamentos isso vira ' + (n*19) + ' cobranças por ciclo. No Pix o custo é próximo de zero; no boleto e no cartão, não.</p>' +
+      '<p>Nenhuma dessas taxas está em qualquer lista de custo da M7M. É o item que transforma parcelamento diário de vantagem comercial em perda de margem.</p>'));
+  }
+
+  selAlvo.addEventListener('change', pintarCarne);
+  selQtdDias.addEventListener('change', pintarCarne);
+  pintarCarne();
+
+  var h = el('h3','sec','Formas de pagamento');
+  box.appendChild(h);
+  var m = el('div','areas');
+  [['Pix','Instantâneo, sem taxa por transação'],
+   ['Cartão de crédito','Taxa da adquirente entra no custo variável'],
+   ['Boleto','Custo por emissão, mesmo quando não é pago']].forEach(function(x){
+    var c = el('div','area');
+    c.style.padding = '12px 14px';
+    var hd = el('div','hd');
+    var nm = el('div','nm', x[0]);
+    nm.style.fontSize = '13.5px';
+    hd.appendChild(nm);
+    var p = el('span','pill no','não integrado');
+    hd.appendChild(p);
+    c.appendChild(hd);
+    c.appendChild(el('div','ds', x[1]));
+    m.appendChild(c);
+  });
+  box.appendChild(m);
+
+  box.appendChild(nota('bad','O buraco que ninguém coloca na planilha',
+    '<p>Cada forma de pagamento tem um custo por transação, e nenhuma delas está em qualquer lista de custo da M7M. <strong>Numa operação de 19 contratos mensais, isso não é arredondamento</strong> — entra no fixo × variável, que é um dos oito indicadores que a Etapa 1 fecha.</p>'));
+
+  abrirFolha('Pagamentos', 'Sem cobrança ativa', box);
+}
+
+/* ══════════════════════════════════════════════════════
+   MINHAS RESERVAS
+   ══════════════════════════════════════════════════════ */
+
+function pintarMinhasReservas(box){
+  box.innerHTML = '';
+  var itens = [];
+  var k;
+
+  for(k in S.lav){
+    if(!Object.prototype.hasOwnProperty.call(S.lav,k)) continue;
+    var p = k.split('|');
+    itens.push({nm:'Lavadora '+p[1], ds:fmtDataLonga(p[0])+' · '+p[2]+' · 1h30', chave:k, tipo:'lav'});
+  }
+  for(k in S.gou){
+    if(!Object.prototype.hasOwnProperty.call(S.gou,k)) continue;
+    var q = k.split('|');
+    var t = TURNOS.filter(function(x){ return x.id === q[1]; })[0];
+    itens.push({nm:'Espaço gourmet', ds:fmtDataLonga(q[0])+' · '+(t?t.nm:q[1])+' · '+S.gou[k].qtd+' pessoas', chave:k, tipo:'gou'});
+  }
+  for(k in S.aca){
+    if(!Object.prototype.hasOwnProperty.call(S.aca,k)) continue;
+    var a = k.split('|');
+    itens.push({nm:'Academia', ds:fmtDataLonga(a[0])+' · '+a[1]+' · 1 hora', chave:k, tipo:'aca'});
+  }
+  for(k in S.cow){
+    if(!Object.prototype.hasOwnProperty.call(S.cow,k)) continue;
+    var c = k.split('|');
+    var ct = COW_TURNOS.filter(function(x){ return x.id === c[1]; })[0];
+    itens.push({nm:'Coworking · estação '+S.cow[k], ds:fmtDataLonga(c[0])+' · '+(ct?ct.nm+' · '+ct.h:c[1]), chave:k, tipo:'cow'});
+  }
+  for(k in S.gar){
+    if(!Object.prototype.hasOwnProperty.call(S.gar,k)) continue;
+    itens.push({nm:'Vaga '+S.gar[k], ds:fmtDataLonga(k)+' · garagem coberta', chave:k, tipo:'gar'});
+  }
+  S.svc.forEach(function(r, i){
+    itens.push({nm:r.nm, ds:r.ds+' · sem preço cotado', chave:i, tipo:'svc'});
+  });
+  S.visitas.forEach(function(v, i){
+    itens.push({nm:'Visita de '+v.nome, ds:fmtDataLonga(v.dia)+' · '+v.per+' · código '+v.cod+(v.vaga?' · vaga '+v.vaga:''), chave:i, tipo:'vis'});
+  });
+  S.estadia.forEach(function(r, i){
+    if(r.tipo === 'temporada'){
+      itens.push({nm:r.nome+' · temporada', ds:fmtData(r.de)+' → '+fmtData(r.ate)+' · '+r.noites+' noites · '+brl(r.total), chave:i, tipo:'est'});
+    }else{
+      itens.push({nm:r.nome+' · moradia', ds:r.plano+' · '+r.meses+' meses · '+brl0(r.total)+' no total', chave:i, tipo:'est'});
+    }
+  });
+
+  if(!itens.length){
+    var e = el('div','empty','Nenhuma reserva ainda. Comece pela lavanderia ou pelo espaço gourmet.');
+    box.appendChild(e);
+    return;
+  }
+
+  var lista = el('div','myres');
+  itens.forEach(function(it){
+    var row = el('div','mr');
+    var left = el('div');
+    left.appendChild(el('div','nm', it.nm));
+    left.appendChild(el('div','ds', it.ds));
+    row.appendChild(left);
+    var b = el('button','cancel','Cancelar');
+    b.type = 'button';
+    b.addEventListener('click', function(){
+      if(it.tipo === 'lav') delete S.lav[it.chave];
+      else if(it.tipo === 'gou') delete S.gou[it.chave];
+      else if(it.tipo === 'aca') delete S.aca[it.chave];
+      else if(it.tipo === 'cow') delete S.cow[it.chave];
+      else if(it.tipo === 'gar') delete S.gar[it.chave];
+      else if(it.tipo === 'svc') S.svc.splice(it.chave, 1);
+      else if(it.tipo === 'vis') S.visitas.splice(it.chave, 1);
+      else S.estadia.splice(it.chave, 1);
+      salvar();
+      pintarInicio();
+      pintarLavanderia(); pintarGourmet(); pintarAcademia(); pintarCoworking(); pintarGaragem();
+      pintarMinhasReservas(box);
+      torrada('Reserva cancelada.', it.nm);
+    });
+    row.appendChild(b);
+    lista.appendChild(row);
+  });
+  box.appendChild(lista);
+}
+
+/* ══════════════════════════════════════════════════════
+   MAIS
+   ══════════════════════════════════════════════════════ */
+
+var MENU = [
+  {nm:'Painel do investidor', ds:'Inventário, receita modelada e o que ainda falta', ic:'<path d="M3 20h18"/><rect x="5" y="11" width="3.4" height="9"/><rect x="10.3" y="6" width="3.4" height="14"/><rect x="15.6" y="14" width="3.4" height="6"/>', acao:'investidor'},
+  {nm:'Encomendas', ds:'2 pacotes no locker, retirada por código', ic:'<path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5 12 13l9-4.5"/><path d="M12 13v7"/>', acao:'encomendas'},
+  {nm:'Chamados', ds:'1 em atendimento · C17 sem sinal', ic:'<path d="M14 3.5 5 13.5v5.5h5.5l9-10z"/><path d="M12.5 5.5 17 10"/>', acao:'chamados'},
+  {nm:'Financeiro', ds:'Segunda via, extrato e histórico', ic:'<rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 10h18"/><path d="M6.5 14.5h4"/>', acao:'financeiro'},
+  {nm:'Regulamento', ds:'Uso das áreas comuns e horários', ic:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7"/><path d="M9 16h5"/>', acao:'regulamento'},
+  {nm:'Falar com a portaria', ds:'24 horas · ramal interno', ic:'<path d="M4.5 5.5c0 8 6 14 14 14l1.5-3-4-2-2 2a14 14 0 0 1-5.5-5.5l2-2-2-4z"/>', acao:'portaria'}
+];
+
+var TEXTOS = {
+  encomendas:{t:'Encomendas', s:'Locker · 2 pacotes', c:'<p>Duas encomendas aguardam retirada nos lockers 04 e 07. O código chega por notificação quando o porteiro guarda o pacote.</p><p><strong>O locker inteligente não está orçado.</strong> Sem ele, o fluxo continua sendo o porteiro guardando e avisando pelo aplicativo — que é o que esta tela faz.</p>'},
+  chamados:{t:'Chamados', s:'1 aberto · 1 resolvido', c:'<p><strong>Aberto:</strong> C17, corredor do 1º andar B, sem sinal há 2h14. Registrado automaticamente pelo próprio monitoramento.</p><p><strong>Resolvido:</strong> lavadora L06 retirada para manutenção, com o horário bloqueado na grade de reservas.</p><p>Um chamado que sai do monitoramento sem ninguém digitar é a diferença entre ter câmera e ter operação.</p>'},
+  financeiro:{t:'Financeiro', s:'Sem cobrança ativa', c:'<p>Não há nada a cobrar: nenhum contrato foi assinado e não existe meio de pagamento integrado.</p><p>A integração com boleto e cartão é entregável da Etapa 1, junto com o custo por transação — que ainda não está em nenhuma planilha de custo.</p>'},
+  regulamento:{t:'Regulamento', s:'Rascunho', c:'<p>Lavanderia das 07h às 22h em blocos de 1h30. Espaço gourmet por turno, até 24 pessoas. Silêncio a partir das 22h.</p><p><strong>É rascunho.</strong> O regulamento definitivo depende da convenção do condomínio, que ainda não foi redigida.</p>'},
+  portaria:{t:'Portaria', s:'Ramal interno', c:'<p>Chamada direta para a portaria, 24 horas.</p><p>O custo de portaria 24h não está orçado e é um dos maiores itens de custo fixo de uma operação como esta. Entra no fluxo de caixa da Etapa 1.</p>'}
+};
+
+function pintarMenu(){
+  var box = document.getElementById('menuList');
+  box.innerHTML = '';
+  MENU.forEach(function(m){
+    var b = el('button','mi');
+    b.type = 'button';
+    b.innerHTML = '<svg class="ic" viewBox="0 0 24 24">'+m.ic+'</svg>';
+    var mid = el('div');
+    mid.appendChild(el('div','nm', m.nm));
+    mid.appendChild(el('div','ds', m.ds));
+    b.appendChild(mid);
+    b.appendChild(el('div','ar','›'));
+    b.addEventListener('click', function(){
+      if(m.acao === 'investidor'){ abrirInvestidor(); return; }
+      var tx = TEXTOS[m.acao];
+      abrirFolha(tx.t, tx.s, '<div style="font-size:13.5px;color:var(--ink-2);line-height:1.6">'+tx.c+'</div>');
+    });
+    box.appendChild(b);
+  });
+}
+
+function abrirInvestidor(){
+  var box = document.createElement('div');
+
+  var t = el('div','tiles');
+  [
+    {k:'Apartamentos', v:'19', c:'g', u:'15 de 1 quarto · 4 de 2 quartos'},
+    {k:'Leitos', v:'23', c:'', u:'3 duplex nos dois pavimentos'},
+    {k:'Receita contratada', v:'52.181', c:'g', u:'R$/mês a 100% de ocupação'},
+    {k:'Ticket médio', v:'2.746', c:'', u:'R$/mês por apartamento'},
+    {k:'Receita por leito', v:'2.269', c:'', u:'R$/mês, com tudo incluso'},
+    {k:'Área privativa', v:'567', c:'', u:'m² · média 29,8 m²/apto'}
+  ].forEach(function(d){
+    var c = el('div','tile');
+    c.appendChild(el('div','k', d.k));
+    c.appendChild(el('div','v ' + d.c, d.v));
+    c.appendChild(el('div','u', d.u));
+    t.appendChild(c);
+  });
+  box.appendChild(t);
+
+  var h = el('h3','sec','Receita por produto');
+  box.appendChild(h);
+  var bars = el('div','bars');
+  PRODUTOS.forEach(function(p, i){
+    var rec = p.preco * p.un;
+    var pct = rec / INVENTARIO.receita * 100;
+    var bar = el('div','bar');
+    var bt = el('div','bt');
+    bt.appendChild(el('span','', p.nome + ' · ' + p.un + ' un.'));
+    bt.appendChild(el('span','v', brl0(rec) + ' · ' + pct.toFixed(1).replace('.',',') + '%'));
+    bar.appendChild(bt);
+    var tr = el('div','track');
+    var fl = el('div','fill' + (i === 1 ? ' d2' : i === 2 ? ' d3' : ''));
+    fl.style.width = pct.toFixed(1) + '%';
+    tr.appendChild(fl);
+    bar.appendChild(tr);
+    bars.appendChild(bar);
+  });
+  box.appendChild(bars);
+
+  box.appendChild(el('h3','sec','O custo fixo, aberto linha a linha'));
+
+  var t2 = el('div','tiles');
+  [
+    {k:'OPEX real', v:'31.800', c:'n', u:'R$/mês · 83,6% da receita efetiva'},
+    {k:'Premissa antiga', v:'35', c:'', u:'% em bloco único · diferença de R$ 254 mil/ano'},
+    {k:'Cenário base', v:'3,3', c:'n', u:'% ao ano · o conservador fica negativo'},
+    {k:'Teto para 12% a.a.', v:'20.237', c:'g', u:'R$/mês de custo fixo máximo'}
+  ].forEach(function(d){
+    var c = el('div','tile');
+    c.appendChild(el('div','k', d.k));
+    c.appendChild(el('div','v ' + d.c, d.v));
+    c.appendChild(el('div','u', d.u));
+    t2.appendChild(c);
+  });
+  box.appendChild(t2);
+
+  var n0 = el('div','note bad');
+  n0.innerHTML = '<span class="lbl">A descoberta que muda a decisão</span>' +
+    '<p>Aberto linha a linha a partir do modelo financeiro oficial, o custo fixo dá <strong>R$ 31.800/mês</strong> — não os 35% em bloco único que o simulador do site usava. São R$ 254 mil por ano de diferença, e com ele o cenário base cai para 3,3% ao ano.</p>' +
+    '<p>Para render 12% a.a. o custo fixo precisa caber em R$ 20.237/mês. <strong>Operação enxuta com terceiros deixou de ser mitigação opcional e virou condição</strong> — é exatamente o que a aba Serviços faz: cada item que passa para terceiro sai destes R$ 31.800.</p>';
+  box.appendChild(n0);
+
+  var n1 = el('div','note warn');
+  n1.innerHTML = '<span class="lbl">O que este painel ainda não mostra</span>' +
+    '<p>CAPEX, custo por apartamento, custo por m², payback e fluxo de caixa. <strong>Nenhuma cotação de obra existe</strong>, e as duas âncoras internas da M7M divergem 2,08× — R$ 60.000 por unidade no briefing contra R$ 125.000 no modelo.</p>' +
+    '<p>O RFP de cotação está pronto no NAS desde 03/08/2026 e nunca foi enviado. É o primeiro entregável da Etapa 1, e é por isso que o pedido é de capital de estudo, não de capital de obra.</p>';
+  box.appendChild(n1);
+
+  var n2 = el('div','note bad');
+  n2.style.marginBottom = '0';
+  n2.innerHTML = '<span class="lbl">Concentração declarada</span>' +
+    '<p><strong>73,7% do inventário e 69,7% da receita estão no M7M Smart.</strong> É deliberado: a concentração está no produto mais barato, o de maior público endereçável. No topo da tabela seria risco; no piso, é defesa.</p>';
+  box.appendChild(n2);
+
+  var src = el('p','src','Quantitativo oficial de 10/08/2026, conferido por extração do modelo BIM. Preços decididos em 10/08/2026. Receita modelada, não realizada. Não constitui oferta de investimento nem promessa de rentabilidade.');
+  box.appendChild(src);
+
+  abrirFolha('Painel do investidor', 'Villa Universitária M7M · Etapa 1', box);
+}
+
+/* ══════════════════════════════════════════════════════
+   AVISOS
+   ══════════════════════════════════════════════════════ */
+
+document.getElementById('bell').addEventListener('click', function(){
+  abrirFolha('Avisos', '3 novos', ''
+    + '<div class="feed-list">'
+    + '<div class="ev hi"><div class="tm">agora</div><div class="tx"><b>C17 sem sinal</b><span class="sub">corredor 1º andar B · chamado aberto automaticamente</span></div></div>'
+    + '<div class="ev"><div class="tm">07:12</div><div class="tx"><b>Sua lavadora terminou</b><span class="sub">L03 · retire em até 30 minutos</span></div></div>'
+    + '<div class="ev"><div class="tm">ontem</div><div class="tx"><b>Encomenda no locker 04</b><span class="sub">código enviado por notificação</span></div></div>'
+    + '</div>'
+    + '<p class="src">Numa operação real, o aviso de câmera sai do gravador e o de lavadora do sensor da máquina. Nenhum dos dois foi orçado.</p>');
+});
+
+/* ══════════════════════════════════════════════════════
+   ARRANQUE
+   ══════════════════════════════════════════════════════ */
+
+pintarAtalhos();
+pintarEventos();
+pintarAreas();
+pintarLavanderia();
+pintarAcademia();
+pintarCoworking();
+pintarGaragem();
+pintarGourmet();
+pintarServicos();
+pintarInicio();
+pintarTemporada();
+pintarMoradia();
+pintarIncluso();
+pintarMenu();
+
+})();
+</script>
+</body>
+</html>
