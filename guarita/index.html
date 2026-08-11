@@ -1,0 +1,2657 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0C1116">
+<meta name="color-scheme" content="dark">
+<title>M7M · Guarita 24h — posto de controle</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:dark;
+  --ground:#0C1116;
+  --surface:#141A21;
+  --surface-2:#1D242C;
+  --surface-3:#242D36;
+  --line:#28313A;
+  --line-soft:#1F272F;
+  --ink:#F7F4EC;
+  --ink-2:#B8BDC3;
+  --ink-3:#7F878F;
+  --ink-4:#5A636C;
+  --gold:#C2A468;
+  --gold-lt:#E0CB9A;
+  --gold-dk:#967F4E;
+  --gold-dkr:#6D5C3A;
+  --pos:#3FB87A;
+  --warn:#D4A04A;
+  --neg:#DC6363;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+}
+html[data-tema="claro"]{
+  color-scheme:light;
+  --ground:#F4F1EB; --surface:#FFFFFF; --surface-2:#EDE9E0; --surface-3:#E3DED2;
+  --line:#D8D2C4; --line-soft:#E7E2D7;
+  --ink:#191E25; --ink-2:#4C555F; --ink-3:#7C8792; --ink-4:#A6AEB8;
+  --gold:#9C7C31; --gold-lt:#C4A55F; --gold-dk:#7C6224; --gold-dkr:#DCCFA8;
+  --pos:#2E8B57; --warn:#B07A16; --neg:#C0392B;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--gold-lt);text-decoration:none}
+
+/* ── esqueleto ───────────────────────────────────────── */
+.app{display:grid;grid-template-columns:236px 1fr;height:100vh;overflow:hidden}
+.side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.marca{padding:16px 18px 14px;border-bottom:1px solid var(--line-soft)}
+.marca .n{font-family:var(--serif);font-size:21px;letter-spacing:.06em;color:var(--gold)}
+.marca .s{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+.menu{flex:1;overflow-y:auto;padding:10px 8px}
+.menu .grp{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4);padding:12px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;color:var(--ink-2);position:relative}
+.nav:hover{background:var(--surface-2);color:var(--ink)}
+.nav.on{background:var(--surface-3);color:var(--ink)}
+.nav.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--gold)}
+.nav .ic{width:20px;text-align:center;font-size:15px;opacity:.9}
+.nav .kb{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+.nav .bd{margin-left:auto;font-family:var(--mono);font-size:11px;background:var(--gold-dkr);color:var(--ink);border-radius:20px;padding:1px 7px}
+.nav .bd.al{background:var(--neg);color:#fff}
+.rodape{padding:10px 12px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--ink-4);display:flex;gap:8px;align-items:center;justify-content:space-between}
+.rodape button{background:none;border:1px solid var(--line);border-radius:6px;color:var(--ink-3);padding:3px 8px;cursor:pointer;font-size:11px}
+
+.main{display:flex;flex-direction:column;overflow:hidden}
+.top{display:flex;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--surface);flex:none}
+.top .tit{font-family:var(--serif);font-size:19px}
+.top .sub{font-size:12px;color:var(--ink-3)}
+.relogio{margin-left:auto;text-align:right;line-height:1.15}
+.relogio .h{font-family:var(--mono);font-size:26px;letter-spacing:.02em}
+.relogio .d{font-size:11px;color:var(--ink-3);text-transform:capitalize}
+.turno-chip{display:flex;flex-direction:column;padding:4px 12px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.turno-chip .a{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4)}
+.turno-chip .b{font-size:13px}
+.btn-sos{background:var(--neg);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;letter-spacing:.06em;cursor:pointer;box-shadow:0 0 0 0 rgba(220,99,99,.6);animation:pulso 2.6s infinite}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(220,99,99,.45)}70%{box-shadow:0 0 0 12px rgba(220,99,99,0)}100%{box-shadow:0 0 0 0 rgba(220,99,99,0)}}
+@media (prefers-reduced-motion:reduce){.btn-sos{animation:none}}
+.corpo{flex:1;overflow-y:auto;padding:18px 20px 40px}
+
+/* ── blocos ──────────────────────────────────────────── */
+.faixa{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);margin-bottom:14px;font-size:13px}
+.faixa.av{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--surface))}
+.faixa.pg{border-color:var(--neg);background:color-mix(in srgb,var(--neg) 12%,var(--surface))}
+.faixa .esp{margin-left:auto}
+.cartao{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.cartao > h3{margin:0;padding:11px 14px;border-bottom:1px solid var(--line-soft);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:8px}
+.cartao > h3 .esp{margin-left:auto;text-transform:none;letter-spacing:0;font-size:12px;color:var(--ink-4)}
+.cartao .cnt{padding:14px}
+.cartao .cnt.rente{padding:0}
+.grade{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (max-width:1180px){.g6{grid-template-columns:repeat(3,minmax(0,1fr))}.g4,.g3,.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;text-align:left;width:100%}
+.kpi:hover{border-color:var(--gold-dk)}
+.kpi .r{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4)}
+.kpi .v{font-family:var(--mono);font-size:30px;line-height:1.1;margin-top:4px}
+.kpi .o{font-size:11px;color:var(--ink-3)}
+.kpi.al{border-color:var(--neg)} .kpi.al .v{color:var(--neg)}
+.kpi.at{border-color:var(--warn)} .kpi.at .v{color:var(--warn)}
+
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);font-weight:600;padding:9px 14px;border-bottom:1px solid var(--line)}
+.tb td{padding:9px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.tb tr:last-child td{border-bottom:0}
+.tb tbody tr:hover{background:var(--surface-2)}
+.tb .num{font-family:var(--mono)}
+.vazio{padding:26px 14px;text-align:center;color:var(--ink-4);font-size:13px}
+
+.et{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--ink-3);white-space:nowrap}
+.et.ok{border-color:var(--pos);color:var(--pos)}
+.et.at{border-color:var(--warn);color:var(--warn)}
+.et.ng{border-color:var(--neg);color:var(--neg)}
+.et.gd{border-color:var(--gold-dk);color:var(--gold-lt)}
+
+.b{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.b:hover{border-color:var(--gold-dk)}
+.b.p{background:var(--gold);border-color:var(--gold);color:#14100A;font-weight:600}
+.b.p:hover{background:var(--gold-lt)}
+.b.d{background:var(--neg);border-color:var(--neg);color:#fff}
+.b.s{padding:4px 9px;font-size:12px}
+.b:disabled{opacity:.4;cursor:not-allowed}
+.linha-b{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+label.cp{display:block;margin-bottom:10px}
+label.cp > span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+input[type=text],input[type=date],input[type=time],input[type=number],input[type=tel],select,textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 22%,transparent)}
+textarea{min-height:78px;resize:vertical}
+.dica{font-size:11px;color:var(--ink-4);margin-top:3px}
+
+.pill{display:inline-flex;gap:6px;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;margin:0 6px 6px 0}
+.mono{font-family:var(--mono)}
+.mut{color:var(--ink-3)}
+.peq{font-size:12px}
+.dir{text-align:right}
+
+/* ── quadro de chaves ────────────────────────────────── */
+.quadro{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+.gancho{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;text-align:left;cursor:pointer;position:relative}
+.gancho:hover{border-color:var(--gold-dk)}
+.gancho .g{font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+.gancho .c{font-family:var(--mono);font-size:15px;color:var(--gold-lt)}
+.gancho .d{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gancho.fora{background:color-mix(in srgb,var(--neg) 14%,var(--surface));border-color:var(--neg)}
+.gancho.fora .c{color:var(--neg)}
+.gancho .q{font-size:11px;color:var(--neg);margin-top:3px}
+
+/* ── modal ───────────────────────────────────────────── */
+.scrim{position:fixed;inset:0;background:rgba(4,7,10,.72);display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+.scrim.on{display:flex}
+.folha{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(760px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.folha.larga{width:min(1080px,100%)}
+.folha .fh{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.folha .fh h4{margin:0;font-family:var(--serif);font-size:18px;font-weight:500}
+.folha .fh .s{font-size:12px;color:var(--ink-3)}
+.folha .fh .x{margin-left:auto;background:none;border:0;color:var(--ink-3);font-size:18px;cursor:pointer;padding:2px 6px}
+.folha .fb{padding:16px 18px;overflow-y:auto}
+.folha .ff{padding:12px 18px;border-top:1px solid var(--line-soft);display:flex;gap:8px;justify-content:flex-end;background:var(--surface-2)}
+.torrada{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--surface-3);border:1px solid var(--line);border-radius:9px;padding:10px 18px;z-index:80;opacity:0;pointer-events:none;transition:opacity .18s}
+.torrada.on{opacity:1}
+.torrada.ok{border-color:var(--pos)} .torrada.ng{border-color:var(--neg)}
+
+/* ── passos de emergência ────────────────────────────── */
+.passo{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:7px;background:var(--surface-2);cursor:pointer}
+.passo:hover{border-color:var(--gold-dk)}
+.passo.feito{background:color-mix(in srgb,var(--pos) 12%,var(--surface));border-color:var(--pos)}
+.passo .n{font-family:var(--mono);width:22px;height:22px;flex:none;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px}
+.passo.feito .n{background:var(--pos);border-color:var(--pos);color:#08130C}
+.passo .t{flex:1}
+.passo .hr{font-family:var(--mono);font-size:12px;color:var(--pos)}
+.nunca{border-left:3px solid var(--neg);padding:8px 12px;background:color-mix(in srgb,var(--neg) 8%,transparent);border-radius:0 6px 6px 0;font-size:13px;margin-top:10px}
+.cen{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:left;cursor:pointer;width:100%}
+.cen:hover{border-color:var(--neg)}
+.cen .e{font-size:22px}
+.cen .n{font-family:var(--serif);font-size:16px;margin-top:6px}
+.cen .q{font-size:12px;color:var(--ink-3);margin-top:3px}
+
+@media print{
+  .side,.top,.linha-b,.noprint{display:none!important}
+  .app{display:block;height:auto}.corpo{overflow:visible;padding:0}
+  body{background:#fff;color:#000}
+  .cartao{border-color:#bbb;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="marca">
+      <div class="n">M7M</div>
+      <div class="s">Guarita · 24 horas</div>
+    </div>
+    <div class="menu" id="menu"></div>
+    <div class="rodape">
+      <span id="verRod">—</span>
+      <button id="btTema">tema</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <div>
+        <div class="tit" id="tTit">—</div>
+        <div class="sub" id="tSub">—</div>
+      </div>
+      <div class="relogio">
+        <div class="h" id="rHora">--:--:--</div>
+        <div class="d" id="rData">—</div>
+      </div>
+      <div class="turno-chip">
+        <span class="a">Turno</span>
+        <span class="b" id="rTurno">fechado</span>
+      </div>
+      <button class="btn-sos" id="btSos">EMERGÊNCIA</button>
+    </div>
+    <div class="corpo" id="corpo"></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true">
+  <div class="folha" id="folha">
+    <div class="fh">
+      <div>
+        <h4 id="fTit">—</h4>
+        <div class="s" id="fSub"></div>
+      </div>
+      <button class="x" id="fX" aria-label="Fechar">✕</button>
+    </div>
+    <div class="fb" id="fBody"></div>
+    <div class="ff" id="fFoot"></div>
+  </div>
+</div>
+<div class="torrada" id="torrada" role="status" aria-live="polite"></div>
+<script>
+(function(){
+"use strict";
+
+/* ══════════════════════════════════════════════════════════════
+   M7M · SISTEMA DA GUARITA, RECEPÇÃO E AUDITORIA — 10/08/2026
+   Arquivo único, roda offline no computador da guarita.
+   Quantitativo oficial 10/08/2026: 19 apartamentos, 10 vagas,
+   33 câmeras, 8 lavadoras, 3 vending. Preços de 10/08/2026.
+   Cadastro de pessoas = DEMONSTRAÇÃO até o cadastro real entrar.
+   ══════════════════════════════════════════════════════════════ */
+
+var VERSAO = '1.0';
+var DATA_VERSAO = '10/08/2026';
+var LS = 'm7m.guarita.v2';
+
+var INVENTARIO = { apartamentos:19, leitos:23, terreo:8, primeiro:8, duplex:3,
+  vagas:10, lavadoras:8, vending:3, camerasPrevistas:33 };
+
+var PRODUTOS = {
+  smart:     { nome:'M7M Smart',     tip:'1 quarto',  preco:2599 },
+  plus:      { nome:'M7M Plus',      tip:'2 quartos', preco:2799 },
+  signature: { nome:'M7M Signature', tip:'Duplex',    preco:3399 }
+};
+
+/* Unidades — 14 Smart, 2 Plus, 3 Signature = 19 (oficial 10/08/2026).
+   Pessoas, telefones e cursos abaixo sao FICTICIOS (demonstracao). */
+var U0 = [
+ ['T01','smart','Terreo','V01','Ana Duarte','+595 981 000 101','Medicina 3o ano','Rita Duarte','mae','+55 67 90000-0101'],
+ ['T02','smart','Terreo','V02','Bruno Ferraz','+595 981 000 102','Medicina 1o ano','Sergio Ferraz','pai','+55 67 90000-0102'],
+ ['T03','smart','Terreo','','Carla Nunes','+595 981 000 103','Odontologia 2o ano','Marta Nunes','mae','+55 67 90000-0103'],
+ ['T04','smart','Terreo','V03','Diego Salas','+595 981 000 104','Medicina 4o ano','Elena Salas','mae','+595 982 000 104'],
+ ['T05','smart','Terreo','','Elisa Rocha','+595 981 000 105','Medicina 2o ano','Paulo Rocha','pai','+55 67 90000-0105'],
+ ['T06','smart','Terreo','V04','Felipe Adorno','+595 981 000 106','Medicina 1o ano','Claudia Adorno','mae','+55 67 90000-0106'],
+ ['T07','smart','Terreo','','Gabriela Mota','+595 981 000 107','Enfermagem 3o ano','Ivo Mota','pai','+55 67 90000-0107'],
+ ['T08','plus','Terreo','V05','Heitor Vaz','+595 981 000 108','Medicina 2o ano','Sonia Vaz','mae','+55 67 90000-0108'],
+ ['P01','smart','1o andar','','Isabel Ortiz','+595 981 000 109','Medicina 5o ano','Ramon Ortiz','pai','+595 982 000 109'],
+ ['P02','smart','1o andar','V06','Joao Prado','+595 981 000 110','Medicina 1o ano','Lucia Prado','mae','+55 67 90000-0110'],
+ ['P03','smart','1o andar','','Karina Lopes','+595 981 000 111','Odontologia 4o ano','Nelson Lopes','pai','+55 67 90000-0111'],
+ ['P04','smart','1o andar','V07','Lucas Benitez','+595 981 000 112','Medicina 3o ano','Rosa Benitez','mae','+595 982 000 112'],
+ ['P05','smart','1o andar','','Marina Cabral','+595 981 000 113','Medicina 2o ano','Alberto Cabral','pai','+55 67 90000-0113'],
+ ['P06','smart','1o andar','V08','Natalia Bueno','+595 981 000 114','Enfermagem 1o ano','Vera Bueno','mae','+55 67 90000-0114'],
+ ['P07','smart','1o andar','','Otavio Lins','+595 981 000 115','Medicina 4o ano','Celia Lins','mae','+55 67 90000-0115'],
+ ['P08','plus','1o andar','V09','Paula Gimenez','+595 981 000 116','Medicina 1o ano','Hugo Gimenez','pai','+595 982 000 116'],
+ ['D01','signature','Duplex','V10','Rafael Toledo','+595 981 000 117','Medicina 6o ano','Iara Toledo','mae','+55 67 90000-0117'],
+ ['D02','signature','Duplex','','Sofia Aquino','+595 981 000 118','Medicina 5o ano','Diego Aquino','pai','+595 982 000 118'],
+ ['D03','signature','Duplex','','Tiago Ramires','+595 981 000 119','Medicina 3o ano','Neusa Ramires','mae','+55 67 90000-0119']
+];
+
+/* Quadro de chaves — 19 de unidade + 16 de area = 35 ganchos */
+var AREAS_CHAVE = [
+ ['A01','Portao de pedestres'],['A02','Cancela veicular comando'],['A03','Guarita armario'],
+ ['A04','Casa de maquinas'],['A05','Quadro eletrico geral'],['A06','Cavalete de gas'],
+ ['A07','Medidores de agua'],['A08','Lavanderia coletiva'],['A09','Academia'],
+ ['A10','Piscina portao'],['A11','Coworking'],['A12','Espaco gourmet'],
+ ['A13','Lockers de encomenda'],['A14','Deposito de limpeza'],['A15','Acesso a laje'],
+ ['A16','Mercado frente comercial']
+];
+
+/* Cameras — mesma lista do app do condominio (33) */
+var CAMS = [
+ ['C01','Portaria principal','Acessos'],['C02','Recepcao','Acessos'],['C03','Cancela veicular','Acessos'],
+ ['C04','Hall de entrada','Acessos'],['C05','Portao de pedestres','Acessos'],
+ ['C06','Fachada via principal','Perimetro'],['C07','Lateral norte','Perimetro'],
+ ['C08','Lateral sul','Perimetro'],['C09','Fundos lote reserva','Perimetro'],
+ ['C10','Vagas 01-05','Estacionamento'],['C11','Vagas 06-10','Estacionamento'],['C12','Rampa de acesso','Estacionamento'],
+ ['C13','Corredor terreo A','Terreo'],['C14','Corredor terreo B','Terreo'],['C15','Escada do terreo','Terreo'],
+ ['C16','Hall dos aptos 01-08','Terreo'],
+ ['C17','Corredor 1o andar A','1o andar'],['C18','Corredor 1o andar B','1o andar'],['C19','Escada do 1o andar','1o andar'],
+ ['C20','Coworking','Convivencia'],['C21','Espaco gourmet mesa','Convivencia'],
+ ['C22','Espaco gourmet churrasqueira','Convivencia'],['C23','Deck de convivencia','Convivencia'],
+ ['C24','Piscina espelho de agua','Piscina'],['C25','Piscina deck e acesso','Piscina'],
+ ['C26','Academia cardio','Academia'],['C27','Academia musculacao','Academia'],
+ ['C28','Lavanderia coletiva','Servicos'],['C29','Lockers de encomenda','Servicos'],['C30','Vending maquinas','Servicos'],
+ ['C31','Mercado salao','Comercial'],['C32','Mercado caixa','Comercial'],['C33','Frente comercial calcada','Comercial']
+];
+
+/* Telefones — estrutura pronta; todo contato nasce NAO VERIFICADO.
+   Numero so vale depois que Marcus conferir e marcar verificado. */
+var CONTATOS_BASE = [
+ ['Emergencia Paraguai','Policia Nacional','911','Emergencia policial em PJC'],
+ ['Emergencia Paraguai','Bomberos Voluntarios','132','Incendio e resgate'],
+ ['Emergencia Paraguai','Emergencias Medicas SEME','141','Ambulancia'],
+ ['Emergencia Paraguai','Hospital Regional PJC','','Confirmar telefone e endereco'],
+ ['Emergencia Brasil','Policia Militar Ponta Pora','190','Lado brasileiro da fronteira'],
+ ['Emergencia Brasil','SAMU Ponta Pora','192','Ambulancia'],
+ ['Emergencia Brasil','Corpo de Bombeiros','193',''],
+ ['Condominio','Sindico','','Primeiro a ser avisado fora da emergencia'],
+ ['Condominio','Zelador','',''],
+ ['Condominio','Administradora','',''],
+ ['Condominio','Empresa de seguranca','','Contrato e numero do posto'],
+ ['Condominio','Proprietario M7M','','Marcus'],
+ ['Manutencao','Eletricista','',''],
+ ['Manutencao','Hidraulico','',''],
+ ['Manutencao','Chaveiro 24h','',''],
+ ['Manutencao','Portao automatico','',''],
+ ['Manutencao','CFTV e monitoramento','',''],
+ ['Manutencao','Piscina','',''],
+ ['Manutencao','Dedetizacao','',''],
+ ['Utilidades','ANDE energia PY','','Falta de energia'],
+ ['Utilidades','ESSAP agua PY','',''],
+ ['Utilidades','Distribuidora de gas','',''],
+ ['Utilidades','Provedor de internet','','']
+];
+
+var PONTOS = ['Portaria e recepcao','Portao de pedestres','Cancela e garagem','Vagas 01-10',
+ 'Corredor terreo','Corredor 1o andar','Escadas','Lavanderia','Academia','Piscina e deck',
+ 'Gourmet e coworking','Lockers e vending','Quadro eletrico e medidores','Perimetro e fundos'];
+
+var HORARIOS_RONDA = ['20:00','22:00','00:00','02:00','04:00','06:00'];
+
+/* Itens vendidos na guarita / recepcao — preco de demonstracao */
+var ITENS_VENDA = [
+ ['Agua mineral 20L',18],['Botijao de gas 13kg',145],['Ficha de lavanderia',12],
+ ['Capsula de cafe',4],['Sabao em po sache',6],['Cartao de acesso 2a via',35],
+ ['Chave 2a via',45],['Uso do gourmet taxa',80]
+];
+
+/* Auditoria — plano de contas */
+var CAT_SAIDA = ['Energia','Agua','Internet e telefonia','Gas','Limpeza e insumos','Manutencao predial',
+ 'Seguranca e guarita','Folha e encargos','Jardim e piscina','Lavanderia manutencao',
+ 'Vending e mercado reposicao','Impostos e taxas','Seguro','Administracao','Obra e melhorias','Outros'];
+var CAT_ENTRADA = ['Aluguel de unidade','Lavanderia','Vending','Mercado','Estadia por temporada',
+ 'Espaco gourmet','Taxa de mudanca','Multa e reposicao','Outros'];
+var FORMAS = ['Dinheiro','Pix','Transferencia','Cartao','Boleto','Fiado'];
+var TIPOS_ACESSO = ['Visitante','Prestador de servico','Entrega / delivery','Visita comercial (corretor)',
+ 'Mudanca','Taxi / aplicativo','Veiculo de morador','Familiar de aluno','Funcionario','Outro'];
+var CHECK_TURNO = ['Quadro de chaves conferido gancho a gancho','Livro de ocorrencias lido',
+ 'Cameras verificadas na tela','Portao de pedestres e cancela testados','Radio e lanterna funcionando',
+ 'Encomendas pendentes conferidas','Caixa da guarita conferido','Pendencias do turno anterior recebidas'];
+
+
+/* ══════════════════════════════════════════════════════════════
+   PROCESSOS DE EMERGÊNCIA (POP)
+   Cada passo é marcado com a hora real em que foi executado.
+   Ao encerrar, a linha do tempo vira registro no livro.
+   ══════════════════════════════════════════════════════════════ */
+var POPS = [
+ { id:'incendio', e:'🔥', nome:'Incêndio ou fumaça', q:'Fogo, cheiro forte de queimado, alarme disparado',
+   passos:[
+    'Acionar Bombeiros (132 PY / 193 BR) e informar: M7M, endereço completo, o que está queimando, se há pessoas presas.',
+    'Acionar o alarme geral e avisar pelo interfone as unidades do andar afetado e do andar acima.',
+    'Abrir totalmente o portão de pedestres e a cancela — a viatura precisa entrar sem parar.',
+    'Desligar o quadro elétrico geral do trecho afetado, se for seguro chegar até ele.',
+    'Fechar o registro do cavalete de gás.',
+    'Conduzir os moradores ao ponto de encontro (calçada em frente, fora do recuo).',
+    'Conferir a lista de unidades: marcar quem saiu e quem não apareceu.',
+    'Entregar aos bombeiros a planta, a lista de ausentes e as chaves das áreas técnicas.',
+    'Avisar síndico e proprietário.'
+   ],
+   nunca:['Nunca abrir porta quente ao toque.','Nunca usar elevador, se houver.','Nunca voltar para buscar objeto.','Nunca combater fogo em botijão de gás — evacuar.'] },
+
+ { id:'medica', e:'🚑', nome:'Emergência médica', q:'Desmaio, convulsão, queda, dor no peito, overdose, corte grave',
+   passos:[
+    'Acionar ambulância (141 PY / 192 BR): endereço, o que aconteceu, idade aproximada, se a pessoa respira.',
+    'Não mover a pessoa se houver queda, batida na cabeça ou suspeita de fratura.',
+    'Manter a via de acesso livre e destacar alguém para receber a ambulância no portão.',
+    'Buscar na ficha do aluno: tipo sanguíneo, alergia, doença e medicamento em uso.',
+    'Ligar para o responsável cadastrado do aluno (pai, mãe ou responsável).',
+    'Anotar a hora exata de cada coisa: início do quadro, ligação, chegada da ambulância, saída.',
+    'Registrar para onde a pessoa foi levada e quem acompanhou.',
+    'Avisar síndico e proprietário.'
+   ],
+   nunca:['Nunca dar remédio, água ou comida.','Nunca deixar a pessoa sozinha.','Nunca divulgar o quadro clínico a terceiros ou em grupo de mensagens.'] },
+
+ { id:'invasao', e:'🚨', nome:'Invasão, assalto ou roubo', q:'Pessoa pulando o muro, arrombamento, assalto em curso',
+   passos:[
+    'Se o assalto está em curso: não reagir. Obedecer, observar e memorizar.',
+    'Acionar a polícia (911 PY / 190 BR) assim que for seguro. Informar quantos são, se estão armados, para onde foram.',
+    'Trancar a guarita e travar os acessos automáticos.',
+    'Avisar os moradores pelo interfone para não descerem e trancarem as portas.',
+    'Preservar o local: não tocar em nada que os invasores tenham tocado.',
+    'Marcar a hora exata e o número das câmeras que cobrem o trecho — a gravação será solicitada.',
+    'Registrar as características: roupa, altura, tatuagem, veículo, placa, direção da fuga.',
+    'Avisar síndico e proprietário. Registrar boletim de ocorrência.'
+   ],
+   nunca:['Nunca perseguir.','Nunca sacar arma.','Nunca apagar ou sobrescrever gravação.','Nunca dar informação de morador por telefone depois do fato.'] },
+
+ { id:'gas', e:'💨', nome:'Vazamento de gás', q:'Cheiro de gás em qualquer ponto do condomínio',
+   passos:[
+    'Fechar o registro geral no cavalete de gás.',
+    'Não acender nem apagar luz, não usar interruptor, não ligar o rádio perto do vazamento.',
+    'Abrir portas e janelas do trecho afetado.',
+    'Retirar as pessoas do trecho e isolar o acesso.',
+    'Acionar a distribuidora de gás e os bombeiros.',
+    'Só religar depois que o técnico liberar por escrito.'
+   ],
+   nunca:['Nunca usar celular junto ao vazamento.','Nunca acender chama para procurar o ponto.','Nunca religar por conta própria.'] },
+
+ { id:'energia', e:'🔌', nome:'Falta de energia', q:'Queda geral ou parcial de energia',
+   passos:[
+    'Verificar se a falta é do condomínio ou da rua (olhar a iluminação pública e os vizinhos).',
+    'Checar o quadro geral: disjuntor desarmado é uma coisa, falta na rua é outra.',
+    'Acionar a distribuidora se a falta for da rua e anotar o número do protocolo.',
+    'Conferir se portão, cancela e câmeras voltaram no nobreak — e por quanto tempo aguentam.',
+    'Passar a operar o portão em modo manual e registrar cada abertura no papel.',
+    'Avisar os moradores pelo mural do app.',
+    'Redobrar a ronda enquanto durar a falta: sem câmera, o olho é a câmera.'
+   ],
+   nunca:['Nunca mexer em quadro molhado.','Nunca deixar o portão aberto por comodidade.'] },
+
+ { id:'agua', e:'💧', nome:'Alagamento ou vazamento de água', q:'Água descendo por parede, teto, garagem ou área comum',
+   passos:[
+    'Fechar o registro geral ou o da coluna afetada.',
+    'Desligar a energia do trecho alagado antes de entrar.',
+    'Fotografar o ponto e a extensão da água — a foto sustenta o pedido ao seguro.',
+    'Isolar a área com cone ou fita e sinalizar piso molhado.',
+    'Acionar o hidráulico de plantão.',
+    'Registrar quais unidades foram afetadas, para cada uma abrir sua ocorrência.'
+   ],
+   nunca:['Nunca pisar em água com energia ligada.','Nunca jogar o problema para o turno seguinte sem registrar.'] },
+
+ { id:'elevador', e:'🛗', nome:'Pessoa presa em elevador ou porta travada', q:'Alguém preso e sem conseguir sair',
+   passos:[
+    'Falar com a pessoa e manter contato o tempo todo — o pânico é o maior risco.',
+    'Acionar a manutenção do equipamento e informar quantos estão presos.',
+    'Se houver pessoa com problema de saúde, criança ou muito tempo de espera, acionar os bombeiros.',
+    'Não tentar abrir a porta com ferramenta.',
+    'Anotar a hora do travamento, das ligações e da liberação.'
+   ],
+   nunca:['Nunca forçar a porta.','Nunca puxar a pessoa por vão parcialmente aberto.'] },
+
+ { id:'ameaca', e:'🛡️', nome:'Ameaça, agressão ou violência doméstica', q:'Briga, ameaça, gritos em unidade, ex-parceiro na portaria',
+   passos:[
+    'Se há agressão em curso, acionar a polícia imediatamente.',
+    'Não entrar sozinho na unidade nem tentar separar.',
+    'Bloquear o acesso de quem estiver do lado de fora e não abrir por insistência.',
+    'Verificar se a unidade tem restrição cadastrada — pessoa com entrada proibida não entra por nenhum motivo.',
+    'Avisar o responsável do aluno somente se a própria pessoa autorizar ou se houver risco de vida.',
+    'Registrar tudo com hora, palavra por palavra do que foi dito, sem opinião.'
+   ],
+   nunca:['Nunca mediar conflito.','Nunca informar em qual unidade a pessoa mora.','Nunca deixar de registrar por parecer briga pequena.'] },
+
+ { id:'perdido', e:'🧭', nome:'Pessoa perdida ou desaparecida', q:'Criança sozinha, idoso desorientado, aluno sem contato',
+   passos:[
+    'Fechar os dois acessos: nenhuma saída sem identificação até localizar.',
+    'Anotar nome, idade, roupa, horário e local em que foi visto pela última vez.',
+    'Varrer na ordem: piscina, garagem, laje, escadas, lavanderia, depósitos.',
+    'Rever a câmera do último ponto conhecido e marcar o horário exato.',
+    'Ligar para o responsável cadastrado.',
+    'Sem localizar em 30 minutos, acionar a polícia.'
+   ],
+   nunca:['Nunca esperar 24 horas para procurar.','Nunca liberar a saída de veículo sem conferir.'] },
+
+ { id:'obra', e:'🦺', nome:'Acidente na obra ou com prestador', q:'Queda, corte, choque ou soterramento durante serviço',
+   passos:[
+    'Acionar a ambulância e, se houver risco elétrico, cortar a energia do trecho.',
+    'Isolar a área e parar o serviço de todo mundo, não só do acidentado.',
+    'Identificar a empresa, o responsável técnico e o encarregado presente.',
+    'Fotografar o local antes que qualquer coisa seja mexida.',
+    'Anotar testemunhas com nome e telefone.',
+    'Avisar proprietário e síndico — acidente de trabalho gera obrigação legal com prazo.'
+   ],
+   nunca:['Nunca liberar a área antes do registro.','Nunca deixar a empresa remover equipamento do local.'] }
+];
+
+
+/* ══════════════════════════════════════════════════════════════
+   NÚCLEO — estado, gravação, atalhos de tela
+   ══════════════════════════════════════════════════════════════ */
+var S = null, VIEW = 'painel', BUSCA = '', TELAS = {};
+
+function uid(p){ return (p||'x') + '-' + Date.now().toString(36) + '-' + (uid.n = (uid.n||0) + 1); }
+function agora(){ return new Date().toISOString(); }
+
+function semente(){
+  var st = {
+    v:1, criado:agora(), demo:true, tema:'escuro',
+    turno:null, turnos:[],
+    unidades:[], chaves:[], chavesHist:[], acessos:[], encomendas:[],
+    contatos:[], ocorrencias:[], rondas:[], emergencias:[], cameras:[],
+    vendas:[], lancamentos:[], atendimentos:[], conferencias:[]
+  };
+  U0.forEach(function(u,i){
+    st.unidades.push({
+      id:'U'+(i+1), cod:u[0], tipo:u[1], andar:u[2], vaga:u[3],
+      aluno:u[4], tel:u[5], curso:u[6],
+      resp:[{ nome:u[7], rel:u[8], tel:u[9], acessoPais:true, codigo:'' }],
+      autorizados:[], veiculos:[], restricoes:[],
+      saude:{ sangue:'', alergia:'', condicao:'', remedio:'', plano:'' },
+      obs:'', demo:true
+    });
+  });
+  st.unidades.forEach(function(u,i){ u.resp[0].codigo = 'M7M-' + u.cod + '-' + (1000+i*7); });
+  U0.forEach(function(u,i){
+    st.chaves.push({ id:'K'+(i+1), gancho:pad2(i+1), cod:u[0], desc:'Apartamento '+u[0], grupo:'Unidade',
+      copias:2, estado:'no quadro', fora:null });
+  });
+  AREAS_CHAVE.forEach(function(a,i){
+    st.chaves.push({ id:'KA'+(i+1), gancho:pad2(20+i), cod:a[0], desc:a[1], grupo:'Área comum',
+      copias:1, estado:'no quadro', fora:null });
+  });
+  CONTATOS_BASE.forEach(function(c,i){
+    st.contatos.push({ id:'F'+(i+1), grupo:c[0], nome:c[1], tel:c[2], obs:c[3], verificadoEm:'', verificadoPor:'' });
+  });
+  CAMS.forEach(function(c){ st.cameras.push({ id:c[0], nm:c[1], z:c[2], st:'on', nota:'' }); });
+  movimentoExemplo(st);
+  contatosExemplo(st);
+  cadastroExemplo(st);
+  return st;
+}
+function recarregarExemplos(){
+  folha('Recarregar os exemplos', 'Devolve o sistema ao estado de apresentação',
+    '<div class="faixa av">Isto substitui tudo que está na tela pelo conjunto de exemplos original. ' +
+    'O que você registrou durante a demonstração se perde.</div>',
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Exportar antes', fn:function(){ exportar(); } },
+      { txt:'Recarregar', cls:'d', fn:function(){
+        S = semente(); gravar(); fechar(); ir('painel');
+        torrada('Exemplos recarregados','Sistema de volta ao estado de apresentação','ok');
+      } } ]);
+}
+
+function carregar(){
+  try{
+    var raw = localStorage.getItem(LS);
+    if(raw){ S = JSON.parse(raw); }
+  }catch(e){ S = null; }
+  if(!S || !S.unidades || !S.unidades.length){ S = semente(); gravar(); }
+  ['acessos','encomendas','chavesHist','ocorrencias','rondas','emergencias','vendas',
+   'lancamentos','atendimentos','turnos','conferencias'].forEach(function(k){
+    if(!S[k]) S[k] = [];
+  });
+}
+function gravar(){
+  try{ localStorage.setItem(LS, JSON.stringify(S)); }
+  catch(e){ torrada('Não consegui gravar no disco deste computador','Exporte o backup agora','ng'); }
+}
+
+/* ── formatação ─────────────────────────────────────── */
+function pad2(n){ return (n<10?'0':'')+n; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function dt(iso){ if(!iso) return '—'; var d = new Date(iso);
+  return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+function hm(iso){ if(!iso) return '—'; var d = new Date(iso); return pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+function dia(iso){ var d = iso ? new Date(iso) : new Date();
+  return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function mes(iso){ return dia(iso).slice(0,7); }
+function decorrido(iso){
+  if(!iso) return '—';
+  var m = Math.floor((Date.now() - new Date(iso).getTime())/60000);
+  if(m < 60) return m+' min';
+  var h = Math.floor(m/60);
+  if(h < 24) return h+'h'+pad2(m%60);
+  return Math.floor(h/24)+'d '+(h%24)+'h';
+}
+function brl(v){ return 'R$ ' + (Math.round(v*100)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function brl0(v){ return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function guarda(){ return S.turno ? S.turno.guarda : 'sem turno aberto'; }
+function un(cod){ for(var i=0;i<S.unidades.length;i++){ if(S.unidades[i].cod===cod) return S.unidades[i]; } return null; }
+
+/* ── avisos, folha, formulário genérico ─────────────── */
+var _tt = null;
+function torrada(msg, sub, tipo){
+  var t = document.getElementById('torrada');
+  t.innerHTML = '<strong>'+esc(msg)+'</strong>' + (sub ? '<br><span class="peq mut">'+esc(sub)+'</span>' : '');
+  t.className = 'torrada on ' + (tipo||'');
+  clearTimeout(_tt); _tt = setTimeout(function(){ t.className = 'torrada'; }, 3600);
+}
+var _ok = null;
+function folha(titulo, sub, corpo, botoes, larga){
+  document.getElementById('fTit').textContent = titulo;
+  document.getElementById('fSub').textContent = sub || '';
+  document.getElementById('fBody').innerHTML = corpo;
+  document.getElementById('folha').className = 'folha' + (larga ? ' larga' : '');
+  var ff = document.getElementById('fFoot');
+  ff.innerHTML = (botoes||[]).map(function(b,i){
+    return '<button class="b '+(b.cls||'')+'" data-fb="'+i+'">'+esc(b.txt)+'</button>'; }).join('');
+  _ok = (botoes||[]).map(function(b){ return b.fn; });
+  document.getElementById('scrim').classList.add('on');
+  var pf = document.querySelector('#fBody input,#fBody select,#fBody textarea');
+  if(pf) setTimeout(function(){ pf.focus(); }, 40);
+}
+function fechar(){ document.getElementById('scrim').classList.remove('on'); _ok = null; }
+
+/* campos: {id, rot, tipo:'texto|num|sel|area|data|hora|tel', opts:[], val, dica, largo} */
+function campos(cs){
+  return '<div class="grade g2">' + cs.map(function(c){
+    var w = c.largo ? ' style="grid-column:1/-1"' : '';
+    var v = esc(c.val==null?'':c.val), i;
+    if(c.tipo === 'sel')
+      i = '<select id="c_'+c.id+'">' + (c.opts||[]).map(function(o){
+        var t = (typeof o === 'object') ? o.t : o, val = (typeof o === 'object') ? o.v : o;
+        return '<option value="'+esc(val)+'"'+(String(val)===String(c.val)?' selected':'')+'>'+esc(t)+'</option>'; }).join('') + '</select>';
+    else if(c.tipo === 'area') i = '<textarea id="c_'+c.id+'">'+v+'</textarea>';
+    else i = '<input type="'+(c.tipo==='num'?'number':c.tipo==='data'?'date':c.tipo==='hora'?'time':'text')+
+      '" id="c_'+c.id+'" value="'+v+'"'+(c.tipo==='num'?' step="0.01"':'')+(c.ph?' placeholder="'+esc(c.ph)+'"':'')+'>';
+    return '<label class="cp"'+w+'><span>'+esc(c.rot)+'</span>'+i+
+      (c.dica?'<span class="dica">'+esc(c.dica)+'</span>':'')+'</label>';
+  }).join('') + '</div>';
+}
+function ler(id){ var e = document.getElementById('c_'+id); return e ? e.value.trim() : ''; }
+function lerNum(id){ var v = parseFloat(ler(id).replace(',','.')); return isNaN(v) ? 0 : v; }
+
+function tabela(cols, linhas, vazio){
+  if(!linhas.length) return '<div class="vazio">'+esc(vazio||'Nada registrado ainda.')+'</div>';
+  return '<table class="tb"><thead><tr>' + cols.map(function(c){
+    return '<th'+(c.dir?' class="dir"':'')+'>'+esc(c.t)+'</th>'; }).join('') +
+    '</tr></thead><tbody>' + linhas.join('') + '</tbody></table>';
+}
+function cartao(titulo, corpo, extra, rente){
+  return '<div class="cartao"><h3>'+esc(titulo)+(extra?'<span class="esp">'+extra+'</span>':'')+
+    '</h3><div class="cnt'+(rente?' rente':'')+'">'+corpo+'</div></div>';
+}
+function selUnidades(inclArea){
+  var o = S.unidades.map(function(u){ return { v:u.cod, t:u.cod+' · '+u.aluno }; });
+  if(inclArea) o = [{v:'',t:'— selecione —'},{v:'ÁREA',t:'Área comum'},{v:'ADM',t:'Administração'}].concat(o);
+  return o;
+}
+
+/* ── registro no livro de ocorrências ───────────────── */
+function registrar(tipo, grav, titulo, texto, auto){
+  S.ocorrencias.unshift({ id:uid('oc'), quando:agora(), tipo:tipo, grav:grav||'Informação',
+    titulo:titulo, texto:texto||'', autor:guarda(), auto:!!auto, adendos:[], fechada:false });
+  gravar();
+}
+
+/* ── navegação ──────────────────────────────────────── */
+var MENU = [
+ { g:'Operação' },
+ { v:'painel',     ic:'▦', n:'Painel',        k:'Alt+1' },
+ { v:'acessos',    ic:'⇄', n:'Acessos',       k:'Alt+2' },
+ { v:'encomendas', ic:'✉', n:'Encomendas',    k:'Alt+3' },
+ { v:'chaves',     ic:'⚿', n:'Chaves',        k:'Alt+4' },
+ { v:'rondas',     ic:'◷', n:'Rondas',        k:'Alt+5' },
+ { v:'cameras',    ic:'◉', n:'Câmeras',       k:'Alt+6' },
+ { g:'Atendimento' },
+ { v:'recepcao',   ic:'☏', n:'Recepção',      k:'Alt+7' },
+ { v:'alunos',     ic:'☺', n:'Alunos e pais', k:'Alt+8' },
+ { v:'telefones',  ic:'✆', n:'Telefones',     k:'Alt+9' },
+ { g:'Segurança' },
+ { v:'emergencia', ic:'⚠', n:'Emergência',    k:'' },
+ { v:'ocorrencias',ic:'▤', n:'Ocorrências',   k:'' },
+ { g:'Administração' },
+ { v:'caixa',      ic:'▣', n:'Caixa e vendas',k:'' },
+ { v:'auditoria',  ic:'∑', n:'Auditoria',     k:'' },
+ { v:'turno',      ic:'⇋', n:'Turno',         k:'' },
+ { g:'Apoio' },
+ { v:'manual',     ic:'❓', n:'Manual',        k:'' },
+ { v:'dados',      ic:'⛁', n:'Dados e backup',k:'' }
+];
+
+var TITULOS = {
+  painel:['Painel do turno','O que está acontecendo agora no condomínio'],
+  acessos:['Controle de acesso','Entrada e saída de quem não mora aqui'],
+  encomendas:['Encomendas','Recebimento e retirada de correspondência'],
+  chaves:['Quadro de chaves','Estoque, retirada, devolução e conferência'],
+  rondas:['Rondas','Ronda programada com ponto e hora'],
+  cameras:['Câmeras','Estado das 33 câmeras previstas'],
+  recepcao:['Recepção','Atendimento, protocolo e chamado de manutenção'],
+  alunos:['Alunos e responsáveis','Cadastro, telefone da família e acesso dos pais'],
+  telefones:['Telefones','Emergência, condomínio, manutenção e utilidades'],
+  emergencia:['Processos de emergência','Passo a passo com hora marcada'],
+  ocorrencias:['Livro de ocorrências','Registro cronológico do que aconteceu'],
+  caixa:['Caixa e vendas','Venda na guarita e fechamento por turno'],
+  auditoria:['Auditoria de custo e receita','Levantamento mensal e anual de ganho ou prejuízo'],
+  turno:['Turno','Abertura, passagem e fechamento com checklist'],
+  manual:['Manual do sistema','Como operar cada tela, campo por campo'],
+  dados:['Dados e backup','Exportar, importar e conferir o que está gravado']
+};
+
+function pintarMenu(){
+  var alertas = contadores();
+  document.getElementById('menu').innerHTML = MENU.map(function(m){
+    if(m.g) return '<div class="grp">'+esc(m.g)+'</div>';
+    var b = alertas[m.v];
+    return '<button class="nav'+(VIEW===m.v?' on':'')+'" data-ir="'+m.v+'">' +
+      '<span class="ic">'+m.ic+'</span><span>'+esc(m.n)+'</span>' +
+      (b ? '<span class="bd'+(b.al?' al':'')+'">'+b.n+'</span>' : (m.k?'<span class="kb">'+m.k+'</span>':'')) +
+      '</button>';
+  }).join('');
+}
+
+/* Cada item do menu mostra um número. O que é pendência fica vermelho;
+   o resto é só o tamanho do cadastro, para nada aparecer vazio. */
+function contadores(){
+  var c = {}, hoje = dia();
+  var dentro = S.acessos.filter(function(a){ return !a.saida; }).length;
+  var pend = S.encomendas.filter(function(e){ return !e.retiradoEm; }).length;
+  var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; }).length;
+  var graves = S.ocorrencias.filter(function(o){ return !o.fechada && o.grav === 'Grave'; }).length;
+  var off = S.cameras.filter(function(x){ return x.st !== 'on'; }).length;
+  var emAberto = S.emergencias.filter(function(e){ return !e.fim; }).length;
+  var rondasHoje = S.rondas.filter(function(r){ return dia(r.inicio) === hoje; }).length;
+  var atend = S.atendimentos.filter(function(a){ return a.status !== 'Resolvido'; }).length;
+  var semConf = S.contatos.filter(function(x){ return !x.verificadoEm; }).length;
+  var vendasHoje = S.vendas.filter(function(v){ return dia(v.quando) === hoje; }).length;
+
+  c.painel     = { n:eventos().filter(function(e){ return dia(e.q) === hoje; }).length };
+  c.acessos    = { n:dentro, al:dentro > 8 };
+  c.encomendas = { n:pend };
+  c.chaves     = { n:fora, al:fora > 3 };
+  c.rondas     = { n:rondasHoje + '/' + HORARIOS_RONDA.length, al:rondasHoje === 0 };
+  c.cameras    = { n:off || S.cameras.length, al:off > 2 };
+  c.recepcao   = { n:atend, al:atend > 4 };
+  c.alunos     = { n:S.unidades.length };
+  c.telefones  = { n:S.contatos.length, al:semConf > 6 };
+  c.emergencia = { n:emAberto || POPS.length, al:emAberto > 0 };
+  c.ocorrencias= { n:graves || S.ocorrencias.length, al:graves > 0 };
+  c.caixa      = { n:vendasHoje || S.vendas.length };
+  c.auditoria  = { n:S.lancamentos.length };
+  c.turno      = { n:S.turno ? 'aberto' : 'fechado', al:!S.turno };
+  c.manual     = { n:MANUAL.length };
+  c.dados      = { n:S.unidades.length + S.acessos.length + S.ocorrencias.length + S.lancamentos.length };
+  return c;
+}
+
+function ir(v){ VIEW = v; BUSCA = ''; pintar(); }
+
+function pintar(){
+  var t = TITULOS[VIEW] || ['—','—'];
+  document.getElementById('tTit').textContent = t[0];
+  document.getElementById('tSub').textContent = t[1];
+  document.getElementById('rTurno').textContent = S.turno
+    ? S.turno.guarda + ' · desde ' + hm(S.turno.inicio) : 'fechado';
+  pintarMenu();
+  var fn = TELAS[VIEW];
+  document.getElementById('corpo').innerHTML = fn ? fn() : '<div class="vazio">Tela não encontrada: ' + esc(VIEW) + '</div>';
+  document.getElementById('corpo').scrollTop = 0;
+}
+
+function relogio(){
+  var d = new Date();
+  document.getElementById('rHora').textContent = pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());
+  document.getElementById('rData').textContent = d.toLocaleDateString('pt-BR',
+    { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+}
+
+function avisoTurno(){
+  if(S.turno) return '';
+  return '<div class="faixa av">⚠ <strong>Nenhum turno aberto.</strong> ' +
+    'Abra o turno para que cada registro saia com o nome de quem está de serviço.' +
+    '<span class="esp"><button class="b p s" data-ir="turno">Abrir turno</button></span></div>';
+}
+function avisoDemo(){
+  if(!S.demo) return '';
+  return '<div class="faixa">🧪 <strong>Dados de demonstração.</strong> ' +
+    'Alunos, telefones e valores são fictícios — servem para mostrar o sistema funcionando. ' +
+    'O cadastro real entra em <em>Alunos e pais</em> e em <em>Telefones</em>.' +
+    '<span class="esp"><button class="b s" data-act="sairDemo">Já é dado real</button></span></div>';
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   TELAS DE OPERAÇÃO
+   ══════════════════════════════════════════════════════════════ */
+
+function v_painel(){
+  var dentro = S.acessos.filter(function(a){ return !a.saida; });
+  var pend = S.encomendas.filter(function(e){ return !e.retiradoEm; });
+  var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; });
+  var oc = S.ocorrencias.filter(function(o){ return !o.fechada; });
+  var off = S.cameras.filter(function(c){ return c.st !== 'on'; });
+  var em = S.emergencias.filter(function(e){ return !e.fim; });
+  var hoje = dia();
+  var rondaHoje = S.rondas.filter(function(r){ return dia(r.inicio) === hoje; });
+
+  var k = [
+    ['acessos','Dentro agora', dentro.length, dentro.length ? 'pessoa mais antiga há ' + decorrido(dentro[dentro.length-1].entrada) : 'nenhum visitante no condomínio', dentro.length>8?'at':''],
+    ['chaves','Chaves fora', fora.length, fora.length ? 'de ' + S.chaves.length + ' ganchos' : 'quadro completo', fora.length>3?'al':''],
+    ['encomendas','Encomendas', pend.length, pend.length ? 'aguardando retirada' : 'nada pendente', ''],
+    ['ocorrencias','Ocorrências abertas', oc.length, oc.length ? 'no livro' : 'livro em dia', oc.filter(function(o){return o.grav==='Grave';}).length?'al':''],
+    ['cameras','Câmeras com falha', off.length, off.length ? 'de ' + S.cameras.length : 'todas em pé', off.length?'at':''],
+    ['rondas','Rondas hoje', rondaHoje.length, 'previstas ' + HORARIOS_RONDA.length, rondaHoje.length < 1 ? 'at' : '']
+  ].map(function(x){
+    return '<button class="kpi '+x[4]+'" data-ir="'+x[0]+'"><div class="r">'+esc(x[1])+
+      '</div><div class="v">'+x[2]+'</div><div class="o">'+esc(x[3])+'</div></button>';
+  }).join('');
+
+  var emAberto = em.length ? '<div class="faixa pg">🚨 <strong>Emergência em andamento: ' +
+    esc(em[0].cenario) + '</strong> — aberta às ' + hm(em[0].inicio) +
+    '<span class="esp"><button class="b d s" data-emg="'+em[0].id+'">Continuar</button></span></div>' : '';
+
+  var linhasDentro = dentro.slice(0,10).map(function(a){
+    return '<tr><td><strong>'+esc(a.nome)+'</strong><div class="peq mut">'+esc(a.tipo)+
+      (a.empresa?' · '+esc(a.empresa):'')+'</div></td>' +
+      '<td>'+esc(a.unidade||'—')+'</td><td class="num">'+hm(a.entrada)+'</td>' +
+      '<td class="num">'+decorrido(a.entrada)+'</td>' +
+      '<td class="dir"><button class="b s" data-saida="'+a.id+'">Registrar saída</button></td></tr>';
+  });
+
+  var ev = eventos().slice(0,12).map(function(e){
+    return '<tr><td class="num mut">'+hm(e.q)+'</td><td>'+e.ic+'</td><td>'+esc(e.t)+
+      '<div class="peq mut">'+esc(e.s||'')+'</div></td></tr>';
+  });
+
+  return avisoDemo() + emAberto + avisoTurno() +
+    '<div class="grade g6" style="margin-bottom:14px">'+k+'</div>' +
+    '<div class="grade g2">' +
+      cartao('Dentro do condomínio agora',
+        tabela([{t:'Quem'},{t:'Unidade'},{t:'Entrada'},{t:'Há'},{t:'',dir:true}], linhasDentro,
+        'Ninguém de fora dentro do condomínio.'),
+        '<button class="b p s" data-act="novoAcesso">Registrar entrada</button>', true) +
+      cartao('Últimos registros', tabela([{t:'Hora'},{t:''},{t:'O quê'}], ev,
+        'O turno ainda não gerou registro.'), '', true) +
+    '</div>' +
+    cartao('Ação rápida',
+      '<div class="linha-b">' +
+      '<button class="b p" data-act="novoAcesso">Entrada de visitante</button>' +
+      '<button class="b" data-act="novaEncomenda">Receber encomenda</button>' +
+      '<button class="b" data-act="novaOcorrencia">Registrar ocorrência</button>' +
+      '<button class="b" data-act="novaRonda">Iniciar ronda</button>' +
+      '<button class="b" data-act="novaVenda">Venda na guarita</button>' +
+      '<button class="b" data-ir="emergencia">Processos de emergência</button>' +
+      '</div>');
+}
+
+function eventos(){
+  var e = [];
+  S.acessos.forEach(function(a){
+    e.push({ q:a.entrada, ic:'⇢', t:'Entrada · '+a.nome, s:a.tipo+(a.unidade?' → '+a.unidade:'') });
+    if(a.saida) e.push({ q:a.saida, ic:'⇠', t:'Saída · '+a.nome, s:'permaneceu '+a.permanencia });
+  });
+  S.encomendas.forEach(function(x){
+    e.push({ q:x.recebidoEm, ic:'✉', t:'Encomenda recebida · '+x.unidade, s:x.transportadora });
+    if(x.retiradoEm) e.push({ q:x.retiradoEm, ic:'✔', t:'Encomenda retirada · '+x.unidade, s:x.retiradoPor });
+  });
+  S.chavesHist.forEach(function(h){
+    e.push({ q:h.retirada, ic:'⚿', t:'Chave '+h.cod+' retirada', s:h.quem });
+    if(h.devolucao) e.push({ q:h.devolucao, ic:'⚿', t:'Chave '+h.cod+' devolvida', s:h.quem });
+  });
+  S.ocorrencias.forEach(function(o){ e.push({ q:o.quando, ic:o.grav==='Grave'?'⚠':'▤', t:o.titulo, s:o.tipo }); });
+  S.rondas.forEach(function(r){ e.push({ q:r.inicio, ic:'◷', t:'Ronda iniciada', s:r.por }); });
+  S.vendas.forEach(function(v){ e.push({ q:v.quando, ic:'▣', t:'Venda · '+v.item, s:brl(v.total) }); });
+  S.atendimentos.forEach(function(a){ e.push({ q:a.quando, ic:'☏', t:'Atendimento · '+a.tipo, s:a.solicitante }); });
+  return e.filter(function(x){ return x.q; }).sort(function(a,b){ return a.q < b.q ? 1 : -1; });
+}
+
+/* ── ACESSOS ─────────────────────────────────────────── */
+function v_acessos(){
+  var dentro = S.acessos.filter(function(a){ return !a.saida; });
+  var hoje = S.acessos.filter(function(a){ return dia(a.entrada) === dia(); });
+  var q = BUSCA.toLowerCase();
+  var hist = S.acessos.filter(function(a){
+    return !q || (a.nome+' '+a.doc+' '+a.unidade+' '+(a.placa||'')).toLowerCase().indexOf(q) >= 0; }).slice(0,60);
+
+  var lDentro = dentro.map(function(a){
+    return '<tr><td><strong>'+esc(a.nome)+'</strong><div class="peq mut">'+esc(a.doc||'sem documento')+'</div></td>' +
+      '<td>'+esc(a.tipo)+(a.empresa?'<div class="peq mut">'+esc(a.empresa)+'</div>':'')+'</td>' +
+      '<td>'+esc(a.unidade||'—')+'<div class="peq mut">'+esc(a.autorizadoPor||'')+'</div></td>' +
+      '<td class="num">'+esc(a.placa||'—')+'</td>' +
+      '<td class="num">'+hm(a.entrada)+'<div class="peq mut">há '+decorrido(a.entrada)+'</div></td>' +
+      '<td class="dir"><button class="b s" data-crach="'+a.id+'">Crachá</button> ' +
+      '<button class="b p s" data-saida="'+a.id+'">Saída</button></td></tr>';
+  });
+  var lHist = hist.map(function(a){
+    return '<tr><td class="num mut">'+dt(a.entrada)+'</td><td><strong>'+esc(a.nome)+'</strong>' +
+      '<div class="peq mut">'+esc(a.tipo)+'</div></td><td>'+esc(a.unidade||'—')+'</td>' +
+      '<td class="num">'+esc(a.placa||'—')+'</td>' +
+      '<td class="num">'+(a.saida ? hm(a.saida) : '<span class="et at">dentro</span>')+'</td>' +
+      '<td>'+esc(a.permanencia||'—')+'</td><td class="peq mut">'+esc(a.por||'')+'</td></tr>';
+  });
+
+  return avisoTurno() +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="novoAcesso">Registrar entrada (Enter)</button>' +
+      '<input type="text" id="bsc" placeholder="Buscar por nome, documento, unidade ou placa" ' +
+      'value="'+esc(BUSCA)+'" style="max-width:420px">' +
+    '</div>' +
+    cartao('Dentro do condomínio · '+dentro.length,
+      tabela([{t:'Quem'},{t:'Tipo'},{t:'Unidade e autorização'},{t:'Placa'},{t:'Entrada'},{t:'',dir:true}],
+        lDentro, 'Ninguém de fora está dentro do condomínio.'), '', true) +
+    cartao('Movimento', tabela([{t:'Entrada'},{t:'Quem'},{t:'Unidade'},{t:'Placa'},{t:'Saída'},{t:'Permanência'},{t:'Registrou'}],
+      lHist, 'Nenhuma entrada registrada.'), esc(hoje.length + ' hoje · ' + S.acessos.length + ' no total'), true);
+}
+
+function novoAcesso(){
+  folha('Registrar entrada', 'Ninguém entra sem registro — nem conhecido, nem de uniforme',
+    campos([
+      { id:'tipo', rot:'Tipo de entrada', tipo:'sel', opts:TIPOS_ACESSO },
+      { id:'nome', rot:'Nome completo' },
+      { id:'doc',  rot:'Documento (CI, RG, CPF ou passaporte)' },
+      { id:'empresa', rot:'Empresa ou transportadora' },
+      { id:'unidade', rot:'Unidade de destino', tipo:'sel', opts:selUnidades(true) },
+      { id:'autorizadoPor', rot:'Autorizado por quem', dica:'Nome de quem atendeu o interfone' },
+      { id:'placa', rot:'Placa do veículo' },
+      { id:'veiculo', rot:'Veículo (modelo e cor)' },
+      { id:'obs', rot:'Observação', tipo:'area', largo:true }
+    ]) + '<div id="alertaUn"></div>',
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar entrada', cls:'p', fn:function(){
+        var nome = ler('nome');
+        if(!nome){ torrada('Falta o nome','Sem nome não há registro','ng'); return; }
+        var a = { id:uid('ac'), tipo:ler('tipo'), nome:nome, doc:ler('doc'), empresa:ler('empresa'),
+          unidade:ler('unidade'), autorizadoPor:ler('autorizadoPor'), placa:ler('placa').toUpperCase(),
+          veiculo:ler('veiculo'), obs:ler('obs'), entrada:agora(), saida:null, por:guarda() };
+        S.acessos.unshift(a); gravar(); fechar(); pintar();
+        torrada('Entrada registrada: '+nome, a.unidade ? 'Destino '+a.unidade : '', 'ok');
+      } } ], true);
+  var sel = document.getElementById('c_unidade');
+  if(sel) sel.addEventListener('change', function(){ alertaUnidade(this.value); });
+}
+function alertaUnidade(cod){
+  var box = document.getElementById('alertaUn'); if(!box) return;
+  var u = un(cod);
+  if(!u){ box.innerHTML = ''; return; }
+  var r = (u.restricoes||[]).length
+    ? '<div class="faixa pg" style="margin:10px 0 0">⛔ <strong>Esta unidade tem restrição cadastrada:</strong> ' +
+      esc(u.restricoes.join(' · ')) + ' — confira o nome antes de liberar.</div>' : '';
+  box.innerHTML = r + '<div class="faixa" style="margin:10px 0 0">☎ <strong>' + esc(u.aluno) + '</strong> · ' +
+    esc(u.tel) + ' — ligue e confirme antes de liberar.</div>';
+}
+function registrarSaida(id){
+  var a = null;
+  S.acessos.forEach(function(x){ if(x.id === id) a = x; });
+  if(!a) return;
+  a.saida = agora(); a.permanencia = decorrido(a.entrada); a.saidaPor = guarda();
+  gravar(); pintar(); torrada('Saída registrada: '+a.nome, 'Permaneceu '+a.permanencia, 'ok');
+}
+function cracha(id){
+  var a = null; S.acessos.forEach(function(x){ if(x.id === id) a = x; });
+  if(!a) return;
+  folha('Crachá de visitante', 'Imprima e entregue — devolvido na saída',
+    '<div style="border:1px solid var(--line);border-radius:10px;padding:18px;text-align:center">' +
+    '<div class="mut peq" style="letter-spacing:.2em">M7M · CONDOMÍNIO</div>' +
+    '<div style="font-family:var(--serif);font-size:26px;margin:8px 0">'+esc(a.nome)+'</div>' +
+    '<div>'+esc(a.tipo)+'</div><div class="mono" style="font-size:20px;margin-top:8px">'+esc(a.unidade||'—')+'</div>' +
+    '<div class="peq mut" style="margin-top:10px">Entrada '+dt(a.entrada)+' · registrado por '+esc(a.por)+'</div>' +
+    '<div class="peq mut">Documento retido: '+esc(a.doc||'—')+'</div></div>',
+    [ { txt:'Fechar', fn:fechar }, { txt:'Imprimir', cls:'p', fn:function(){ window.print(); } } ]);
+}
+
+/* ── ENCOMENDAS ──────────────────────────────────────── */
+function v_encomendas(){
+  var pend = S.encomendas.filter(function(e){ return !e.retiradoEm; });
+  var ret = S.encomendas.filter(function(e){ return e.retiradoEm; }).slice(0,40);
+  var lp = pend.map(function(e){
+    var d = Math.floor((Date.now()-new Date(e.recebidoEm).getTime())/86400000);
+    return '<tr><td><strong>'+esc(e.unidade)+'</strong><div class="peq mut">'+esc(e.destinatario)+'</div></td>' +
+      '<td>'+esc(e.transportadora)+'<div class="peq mut">'+esc(e.codigo||'sem código')+'</div></td>' +
+      '<td>'+esc(e.local)+'</td><td class="num">'+dt(e.recebidoEm)+'</td>' +
+      '<td>'+(d>=3?'<span class="et ng">'+d+' dias</span>':'<span class="et">'+d+' dias</span>')+'</td>' +
+      '<td class="dir"><button class="b p s" data-retirar="'+e.id+'">Entregar</button></td></tr>';
+  });
+  var lr = ret.map(function(e){
+    return '<tr><td>'+esc(e.unidade)+'</td><td>'+esc(e.transportadora)+'</td>' +
+      '<td class="num">'+dt(e.recebidoEm)+'</td><td class="num">'+dt(e.retiradoEm)+'</td>' +
+      '<td>'+esc(e.retiradoPor)+'<div class="peq mut">'+esc(e.docRetirada||'')+'</div></td></tr>';
+  });
+  return avisoTurno() +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+    '<button class="b p" data-act="novaEncomenda">Receber encomenda</button></div>' +
+    cartao('Aguardando retirada · '+pend.length,
+      tabela([{t:'Unidade'},{t:'Transportadora'},{t:'Onde está'},{t:'Recebida'},{t:'Parada há'},{t:'',dir:true}],
+        lp, 'Nenhuma encomenda parada na portaria.'), '', true) +
+    cartao('Entregues', tabela([{t:'Unidade'},{t:'Transportadora'},{t:'Recebida'},{t:'Entregue'},{t:'Retirou'}],
+      lr, 'Nada entregue ainda.'), '', true);
+}
+function novaEncomenda(){
+  folha('Receber encomenda', 'O que entra na portaria vira responsabilidade da portaria',
+    campos([
+      { id:'unidade', rot:'Unidade', tipo:'sel', opts:selUnidades(true) },
+      { id:'destinatario', rot:'Nome no pacote' },
+      { id:'transportadora', rot:'Transportadora ou remetente' },
+      { id:'codigo', rot:'Código de rastreio' },
+      { id:'local', rot:'Onde ficou guardada', tipo:'sel',
+        opts:['Locker 01','Locker 02','Locker 03','Locker 04','Armário da guarita','Balcão da recepção','Área da recepção'] },
+      { id:'volume', rot:'Volume', tipo:'sel', opts:['Envelope','Caixa pequena','Caixa média','Caixa grande','Volume pesado'] },
+      { id:'obs', rot:'Observação (pacote danificado, molhado, aberto)', tipo:'area', largo:true }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar', cls:'p', fn:function(){
+        var u = ler('unidade');
+        if(!u){ torrada('Falta a unidade','','ng'); return; }
+        S.encomendas.unshift({ id:uid('en'), unidade:u, destinatario:ler('destinatario'),
+          transportadora:ler('transportadora'), codigo:ler('codigo'), local:ler('local'),
+          volume:ler('volume'), obs:ler('obs'), recebidoEm:agora(), recebidoPor:guarda(),
+          retiradoEm:null, retiradoPor:'', docRetirada:'' });
+        gravar(); fechar(); pintar(); torrada('Encomenda registrada para '+u,'Avise o morador','ok');
+      } } ], true);
+}
+function retirarEncomenda(id){
+  var e = null; S.encomendas.forEach(function(x){ if(x.id === id) e = x; });
+  if(!e) return;
+  var u = un(e.unidade);
+  folha('Entregar encomenda', e.unidade + ' · ' + (e.transportadora || ''),
+    (u ? '<div class="faixa">Morador cadastrado: <strong>'+esc(u.aluno)+'</strong> · '+esc(u.tel)+'</div>' : '') +
+    campos([
+      { id:'quem', rot:'Quem está retirando', val:u?u.aluno:'' },
+      { id:'doc', rot:'Documento conferido' },
+      { id:'obs', rot:'Observação', tipo:'area', largo:true }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Confirmar entrega', cls:'p', fn:function(){
+        e.retiradoEm = agora(); e.retiradoPor = ler('quem') || 'não informado';
+        e.docRetirada = ler('doc'); e.obsRetirada = ler('obs'); e.entregouGuarda = guarda();
+        gravar(); fechar(); pintar(); torrada('Entrega registrada','','ok');
+      } } ]);
+}
+
+/* ── CHAVES ──────────────────────────────────────────── */
+function v_chaves(){
+  var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; });
+  var quadro = S.chaves.map(function(k){
+    var f = k.estado !== 'no quadro';
+    return '<button class="gancho'+(f?' fora':'')+'" data-chave="'+k.id+'">' +
+      '<div class="g">gancho '+esc(k.gancho)+'</div><div class="c">'+esc(k.cod)+'</div>' +
+      '<div class="d">'+esc(k.desc)+'</div>' +
+      (f ? '<div class="q">com '+esc(k.fora.quem)+' há '+decorrido(k.fora.desde)+'</div>'
+         : '<div class="peq mut">no quadro · '+k.copias+' cópia'+(k.copias>1?'s':'')+'</div>') +
+      '</button>';
+  }).join('');
+  var hist = S.chavesHist.slice(0,40).map(function(h){
+    return '<tr><td class="mono">'+esc(h.cod)+'</td><td>'+esc(h.quem)+
+      '<div class="peq mut">'+esc(h.doc||'')+'</div></td><td>'+esc(h.motivo)+'</td>' +
+      '<td class="num">'+dt(h.retirada)+'</td>' +
+      '<td class="num">'+(h.devolucao ? dt(h.devolucao) : '<span class="et ng">não devolveu</span>')+'</td>' +
+      '<td class="peq mut">'+esc(h.porRetirada||'')+'</td></tr>';
+  });
+  var ultima = S.conferencias.length ? S.conferencias[0] : null;
+  return avisoTurno() +
+    (fora.length ? '<div class="faixa av">⚿ <strong>'+fora.length+' chave(s) fora do quadro.</strong> ' +
+      'Chave que atravessa o turno tem que estar no relatório de passagem.</div>' : '') +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="conferirQuadro">Conferir o quadro inteiro</button>' +
+      '<span class="peq mut">' + (ultima ? 'Última conferência: ' + dt(ultima.quando) + ' por ' + esc(ultima.por) +
+        ' — ' + ultima.faltando + ' fora do quadro' : 'Nenhuma conferência registrada ainda') + '</span>' +
+    '</div>' +
+    cartao('Quadro de chaves · '+S.chaves.length+' ganchos', '<div class="quadro">'+quadro+'</div>',
+      esc(fora.length + ' fora · ' + (S.chaves.length - fora.length) + ' no lugar')) +
+    cartao('Histórico de retirada', tabela([{t:'Chave'},{t:'Quem levou'},{t:'Motivo'},{t:'Retirada'},{t:'Devolução'},{t:'Guarda'}],
+      hist, 'Nenhuma chave foi retirada ainda.'), '', true);
+}
+function abrirChave(id){
+  var k = null; S.chaves.forEach(function(x){ if(x.id === id) k = x; });
+  if(!k) return;
+  if(k.estado === 'no quadro'){
+    folha('Retirar chave ' + k.cod, k.desc + ' · gancho ' + k.gancho,
+      campos([
+        { id:'quem', rot:'Quem está levando' },
+        { id:'doc', rot:'Documento retido' },
+        { id:'vinculo', rot:'Vínculo', tipo:'sel', opts:['Morador','Prestador de serviço','Funcionário','Síndico','Administração','Bombeiro / polícia','Outro'] },
+        { id:'motivo', rot:'Para quê', largo:true },
+        { id:'previsao', rot:'Previsão de devolução', tipo:'hora' }
+      ]),
+      [ { txt:'Cancelar', fn:fechar },
+        { txt:'Confirmar retirada', cls:'p', fn:function(){
+          var q = ler('quem');
+          if(!q){ torrada('Falta quem está levando','Chave não sai sem nome','ng'); return; }
+          k.estado = 'fora';
+          k.fora = { quem:q, doc:ler('doc'), vinculo:ler('vinculo'), motivo:ler('motivo'),
+            previsao:ler('previsao'), desde:agora(), por:guarda() };
+          S.chavesHist.unshift({ id:uid('kh'), chave:k.id, cod:k.cod, desc:k.desc, quem:q, doc:ler('doc'),
+            motivo:ler('motivo'), retirada:agora(), devolucao:null, porRetirada:guarda() });
+          gravar(); fechar(); pintar(); torrada('Chave '+k.cod+' com '+q,'Cobre a devolução no fim do turno','ok');
+        } } ]);
+  } else {
+    folha('Devolver chave ' + k.cod, 'Está com ' + k.fora.quem + ' há ' + decorrido(k.fora.desde),
+      '<div class="faixa">Motivo da retirada: ' + esc(k.fora.motivo || '—') +
+      '<br>Retirada em ' + dt(k.fora.desde) + ' por ' + esc(k.fora.por) + '</div>' +
+      campos([{ id:'obs', rot:'Observação na devolução', tipo:'area', largo:true }]),
+      [ { txt:'Cancelar', fn:fechar },
+        { txt:'Confirmar devolução', cls:'p', fn:function(){
+          for(var i=0;i<S.chavesHist.length;i++){
+            if(S.chavesHist[i].chave === k.id && !S.chavesHist[i].devolucao){
+              S.chavesHist[i].devolucao = agora();
+              S.chavesHist[i].obsDevolucao = ler('obs');
+              S.chavesHist[i].porDevolucao = guarda();
+              break;
+            }
+          }
+          k.estado = 'no quadro'; k.fora = null;
+          gravar(); fechar(); pintar(); torrada('Chave '+k.cod+' de volta no gancho','','ok');
+        } } ]);
+  }
+}
+function conferirQuadro(){
+  var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; });
+  folha('Conferência do quadro', 'Conte gancho por gancho e compare com a tela',
+    '<p class="peq mut">O sistema diz que <strong>'+(S.chaves.length-fora.length)+'</strong> chaves estão no quadro e <strong>'+fora.length+'</strong> estão fora.</p>' +
+    (fora.length ? '<ul>' + fora.map(function(k){
+      return '<li>'+esc(k.cod)+' · '+esc(k.desc)+' — com '+esc(k.fora.quem)+' desde '+dt(k.fora.desde)+'</li>'; }).join('') + '</ul>' : '') +
+    campos([{ id:'bate', rot:'A contagem física bate com a tela?', tipo:'sel', opts:['Sim, bate','Não bate'] },
+      { id:'obs', rot:'O que não bate', tipo:'area', largo:true }]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar conferência', cls:'p', fn:function(){
+        var bate = ler('bate') === 'Sim, bate';
+        S.conferencias.unshift({ id:uid('cf'), quando:agora(), por:guarda(),
+          faltando:fora.length, bate:bate, obs:ler('obs') });
+        if(!bate) registrar('Chaves','Grave','Divergência no quadro de chaves', ler('obs'), true);
+        gravar(); fechar(); pintar();
+        torrada('Conferência registrada', bate ? 'Quadro confere' : 'Divergência foi para o livro', bate?'ok':'ng');
+      } } ]);
+}
+
+/* ── RONDAS ──────────────────────────────────────────── */
+function v_rondas(){
+  var hoje = S.rondas.filter(function(r){ return dia(r.inicio) === dia(); });
+  var feitas = {};
+  hoje.forEach(function(r){ if(r.horario) feitas[r.horario] = r; });
+  var prev = HORARIOS_RONDA.map(function(h){
+    var r = feitas[h];
+    var agoraHm = pad2(new Date().getHours())+':'+pad2(new Date().getMinutes());
+    var atrasada = !r && h < agoraHm;
+    return '<button class="kpi '+(r?'':(atrasada?'al':''))+'" data-ronda="'+h+'">' +
+      '<div class="r">'+h+'</div><div class="v" style="font-size:20px">' +
+      (r ? '✔' : (atrasada ? 'atrasada' : 'prevista')) + '</div>' +
+      '<div class="o">'+(r ? r.por + ' · ' + hm(r.inicio) : 'clique para iniciar')+'</div></button>';
+  }).join('');
+  var hist = S.rondas.slice(0,30).map(function(r){
+    var n = Object.keys(r.pontos||{}).length;
+    return '<tr><td class="num">'+dt(r.inicio)+'</td><td>'+esc(r.horario||'extra')+'</td>' +
+      '<td>'+esc(r.por)+'</td><td class="num">'+n+'/'+PONTOS.length+'</td>' +
+      '<td>'+(r.fim?decorrido(r.inicio)===''?'':hm(r.fim):'<span class="et at">em curso</span>')+'</td>' +
+      '<td class="peq">'+esc(r.obs||'')+'</td></tr>';
+  });
+  return avisoTurno() +
+    '<div class="linha-b" style="margin-bottom:14px"><button class="b p" data-act="novaRonda">Iniciar ronda extra</button></div>' +
+    cartao('Rondas de hoje', '<div class="grade g6">'+prev+'</div>',
+      esc(hoje.length + ' de ' + HORARIOS_RONDA.length + ' feitas')) +
+    cartao('Histórico', tabela([{t:'Início'},{t:'Horário'},{t:'Guarda'},{t:'Pontos'},{t:'Fim'},{t:'Observação'}],
+      hist, 'Nenhuma ronda registrada.'), '', true);
+}
+function novaRonda(horario){
+  var r = { id:uid('rd'), inicio:agora(), horario:(typeof horario === 'string' ? horario : ''), por:guarda(),
+    pontos:{}, obs:'', fim:null };
+  S.rondas.unshift(r); gravar(); rondaAberta(r.id);
+}
+function rondaAberta(id){
+  var r = null; S.rondas.forEach(function(x){ if(x.id === id) r = x; });
+  if(!r) return;
+  function corpo(){
+    return '<p class="peq mut">Marque cada ponto no momento em que você estiver nele. A hora é gravada sozinha.</p>' +
+      PONTOS.map(function(p,i){
+        var f = r.pontos[i];
+        return '<div class="passo'+(f?' feito':'')+'" data-ponto="'+i+'">' +
+          '<div class="n">'+(i+1)+'</div><div class="t">'+esc(p)+'</div>' +
+          '<div class="hr">'+(f?hm(f):'')+'</div></div>';
+      }).join('') +
+      campos([{ id:'obs', rot:'O que você viu de diferente', tipo:'area', largo:true, val:r.obs }]);
+  }
+  folha('Ronda ' + (r.horario || 'extra'), 'Iniciada às ' + hm(r.inicio) + ' por ' + r.por, corpo(),
+    [ { txt:'Continuar depois', fn:function(){ r.obs = ler('obs'); gravar(); fechar(); pintar(); } },
+      { txt:'Encerrar ronda', cls:'p', fn:function(){
+        r.obs = ler('obs'); r.fim = agora(); gravar(); fechar(); pintar();
+        var n = Object.keys(r.pontos).length;
+        if(r.obs) registrar('Ronda','Informação','Ronda '+(r.horario||'extra')+' com observação', r.obs, true);
+        torrada('Ronda encerrada', n+' de '+PONTOS.length+' pontos', n===PONTOS.length?'ok':'');
+      } } ], true);
+  document.getElementById('fBody').addEventListener('click', function(ev){
+    var el = ev.target.closest('[data-ponto]'); if(!el) return;
+    var i = el.getAttribute('data-ponto');
+    if(r.pontos[i]) delete r.pontos[i]; else r.pontos[i] = agora();
+    gravar();
+    var obs = ler('obs');
+    document.getElementById('fBody').innerHTML = corpo();
+    var eo = document.getElementById('c_obs'); if(eo) eo.value = obs;
+  });
+}
+
+/* ── CÂMERAS ─────────────────────────────────────────── */
+function v_cameras(){
+  var zonas = {};
+  S.cameras.forEach(function(c){ (zonas[c.z] = zonas[c.z] || []).push(c); });
+  var off = S.cameras.filter(function(c){ return c.st !== 'on'; });
+  var blocos = Object.keys(zonas).map(function(z){
+    var linhas = zonas[z].map(function(c){
+      var et = c.st === 'on' ? '<span class="et ok">no ar</span>'
+        : c.st === 'deg' ? '<span class="et at">degradada</span>' : '<span class="et ng">fora</span>';
+      return '<tr><td class="mono">'+esc(c.id)+'</td><td>'+esc(c.nm)+
+        (c.nota?'<div class="peq mut">'+esc(c.nota)+'</div>':'')+'</td>' +
+        '<td>'+et+'</td><td class="dir"><button class="b s" data-cam="'+c.id+'">Alterar</button></td></tr>';
+    });
+    return cartao(z, tabela([{t:'Cód.'},{t:'Câmera'},{t:'Estado'},{t:'',dir:true}], linhas), '', true);
+  }).join('');
+  return (off.length ? '<div class="faixa av">◉ <strong>'+off.length+' câmera(s) fora do ar ou degradada(s).</strong> ' +
+      'Sem câmera no trecho, a ronda a pé cobre o buraco — e isso vai para o livro.</div>' : '') +
+    '<div class="grade g2">' + blocos + '</div>';
+}
+function alterarCamera(id){
+  var c = null; S.cameras.forEach(function(x){ if(x.id === id) c = x; });
+  if(!c) return;
+  folha('Câmera ' + c.id, c.nm + ' · ' + c.z,
+    campos([
+      { id:'st', rot:'Estado', tipo:'sel', val:c.st,
+        opts:[{v:'on',t:'No ar'},{v:'deg',t:'Degradada (imagem ruim, sem infravermelho)'},{v:'off',t:'Fora do ar'}] },
+      { id:'nota', rot:'O que está acontecendo', tipo:'area', largo:true, val:c.nota }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Salvar', cls:'p', fn:function(){
+        var novo = ler('st'), antes = c.st;
+        c.st = novo; c.nota = ler('nota');
+        if(novo !== 'on' && antes === 'on')
+          registrar('CFTV', novo === 'off' ? 'Grave' : 'Atenção', 'Câmera ' + c.id + ' ' +
+            (novo === 'off' ? 'fora do ar' : 'degradada'), c.nm + ' · ' + c.nota, true);
+        gravar(); fechar(); pintar(); torrada('Câmera '+c.id+' atualizada','','ok');
+      } } ]);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   ATENDIMENTO E SEGURANÇA
+   ══════════════════════════════════════════════════════════════ */
+
+var TIPOS_ATEND = ['Informação','Reclamação','Chamado de manutenção','Reserva de área comum',
+  'Mudança (entrada ou saída)','Entrega de documento','Achados e perdidos','Visita comercial',
+  'Segunda via de chave ou cartão','Barulho e convivência','Outro'];
+
+function v_recepcao(){
+  var abertos = S.atendimentos.filter(function(a){ return a.status !== 'Resolvido'; });
+  var todos = S.atendimentos.slice(0,60);
+  var la = abertos.map(function(a){
+    return '<tr><td class="num mut">'+dt(a.quando)+'</td>' +
+      '<td><strong>'+esc(a.tipo)+'</strong><div class="peq mut">'+esc(a.assunto)+'</div></td>' +
+      '<td>'+esc(a.solicitante)+'<div class="peq mut">'+esc(a.unidade||'')+'</div></td>' +
+      '<td>'+esc(a.encaminhado||'—')+'</td>' +
+      '<td><span class="et '+(a.status==='Aberto'?'ng':'at')+'">'+esc(a.status)+'</span></td>' +
+      '<td class="dir"><button class="b s" data-atend="'+a.id+'">Andamento</button></td></tr>';
+  });
+  var lt = todos.map(function(a){
+    return '<tr><td class="num mut">'+dt(a.quando)+'</td><td>'+esc(a.tipo)+'</td>' +
+      '<td>'+esc(a.solicitante)+'</td><td>'+esc(a.unidade||'—')+'</td>' +
+      '<td>'+esc(a.status)+'</td><td class="peq">'+esc(a.assunto)+'</td></tr>';
+  });
+  return avisoTurno() +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="novoAtendimento">Novo atendimento</button>' +
+      '<button class="b" data-act="novoAtendimento" data-tipo="Chamado de manutenção">Abrir chamado de manutenção</button>' +
+      '<button class="b" data-act="novoAtendimento" data-tipo="Mudança (entrada ou saída)">Autorizar mudança</button>' +
+    '</div>' +
+    cartao('Em aberto · '+abertos.length,
+      tabela([{t:'Quando'},{t:'Tipo e assunto'},{t:'Quem pediu'},{t:'Encaminhado a'},{t:'Situação'},{t:'',dir:true}],
+        la, 'Nenhum atendimento pendente.'), '', true) +
+    cartao('Todos os atendimentos',
+      tabela([{t:'Quando'},{t:'Tipo'},{t:'Quem'},{t:'Unidade'},{t:'Situação'},{t:'Assunto'}], lt,
+        'A recepção ainda não registrou atendimento.'),
+      esc(S.atendimentos.length + ' no total'), true);
+}
+function novoAtendimento(tipo){
+  folha('Registrar atendimento', 'Tudo que a recepção recebe vira protocolo com hora e nome',
+    campos([
+      { id:'tipo', rot:'Tipo', tipo:'sel', opts:TIPOS_ATEND, val:tipo || 'Informação' },
+      { id:'solicitante', rot:'Quem procurou a recepção' },
+      { id:'unidade', rot:'Unidade', tipo:'sel', opts:selUnidades(true) },
+      { id:'contato', rot:'Telefone de retorno' },
+      { id:'encaminhado', rot:'Encaminhado a', tipo:'sel',
+        opts:['—','Síndico','Administradora','Zelador','Manutenção','Proprietário','Empresa de segurança','Resolvido na hora'] },
+      { id:'prazo', rot:'Prazo combinado', tipo:'data' },
+      { id:'assunto', rot:'O que foi pedido, nas palavras de quem pediu', tipo:'area', largo:true }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar', cls:'p', fn:function(){
+        var s = ler('solicitante');
+        if(!s){ torrada('Falta quem pediu','','ng'); return; }
+        var enc = ler('encaminhado');
+        S.atendimentos.unshift({ id:uid('at'), quando:agora(), tipo:ler('tipo'), solicitante:s,
+          unidade:ler('unidade'), contato:ler('contato'), encaminhado:enc, prazo:ler('prazo'),
+          assunto:ler('assunto'), status: enc === 'Resolvido na hora' ? 'Resolvido' : 'Aberto',
+          por:guarda(), andamentos:[] });
+        gravar(); fechar(); pintar(); torrada('Atendimento protocolado','','ok');
+      } } ], true);
+}
+function verAtendimento(id){
+  var a = null; S.atendimentos.forEach(function(x){ if(x.id === id) a = x; });
+  if(!a) return;
+  folha(a.tipo, a.solicitante + (a.unidade ? ' · ' + a.unidade : '') + ' · ' + dt(a.quando),
+    '<p>'+esc(a.assunto)+'</p>' +
+    (a.andamentos.length ? '<div class="cartao"><h3>Andamento</h3><div class="cnt">' +
+      a.andamentos.map(function(n){ return '<div class="peq"><span class="mono mut">'+dt(n.quando)+'</span> · ' +
+        esc(n.por) + ' — ' + esc(n.texto) + '</div>'; }).join('') + '</div></div>' : '') +
+    campos([
+      { id:'texto', rot:'Novo andamento', tipo:'area', largo:true },
+      { id:'status', rot:'Situação', tipo:'sel', val:a.status, opts:['Aberto','Em andamento','Aguardando terceiro','Resolvido'] }
+    ]),
+    [ { txt:'Fechar', fn:fechar },
+      { txt:'Salvar', cls:'p', fn:function(){
+        var t = ler('texto');
+        if(t) a.andamentos.push({ quando:agora(), por:guarda(), texto:t });
+        a.status = ler('status');
+        gravar(); fechar(); pintar(); torrada('Atendimento atualizado','','ok');
+      } } ]);
+}
+
+/* ── ALUNOS E RESPONSÁVEIS ───────────────────────────── */
+function v_alunos(){
+  var q = BUSCA.toLowerCase();
+  var lista = S.unidades.filter(function(u){
+    if(!q) return true;
+    var t = (u.cod+' '+u.aluno+' '+u.tel+' '+u.curso+' '+u.resp.map(function(r){return r.nome+' '+r.tel;}).join(' ')).toLowerCase();
+    return t.indexOf(q) >= 0;
+  });
+  var linhas = lista.map(function(u){
+    var r = u.resp[0] || {};
+    return '<tr><td class="mono">'+esc(u.cod)+'<div class="peq mut">'+esc(PRODUTOS[u.tipo].nome)+'</div></td>' +
+      '<td><strong>'+esc(u.aluno)+'</strong><div class="peq mut">'+esc(u.curso)+'</div></td>' +
+      '<td class="num">'+esc(u.tel)+'</td>' +
+      '<td>'+esc(r.nome||'—')+'<div class="peq mut">'+esc(r.rel||'')+'</div></td>' +
+      '<td class="num">'+esc(r.tel||'—')+'</td>' +
+      '<td>'+((u.restricoes||[]).length?'<span class="et ng">restrição</span>':'') +
+        (u.saude && u.saude.alergia ? ' <span class="et at">saúde</span>' : '')+'</td>' +
+      '<td class="dir"><button class="b s" data-un="'+u.cod+'">Ficha</button></td></tr>';
+  });
+  return '<div class="linha-b" style="margin-bottom:14px">' +
+      '<input type="text" id="bsc" placeholder="Buscar aluno, unidade, telefone ou nome do responsável" value="'+esc(BUSCA)+'" style="max-width:460px">' +
+      '<button class="b" data-act="portalPais">Como os pais acessam</button>' +
+    '</div>' +
+    cartao('Unidades e alunos',
+      tabela([{t:'Unidade'},{t:'Aluno'},{t:'Telefone'},{t:'Responsável'},{t:'Telefone do responsável'},{t:''},{t:'',dir:true}],
+        linhas, 'Nenhum resultado.'),
+      esc(S.unidades.length + ' unidades · ' + INVENTARIO.leitos + ' leitos'), true);
+}
+function fichaUnidade(cod){
+  var u = un(cod); if(!u) return;
+  var p = PRODUTOS[u.tipo];
+  var dentro = S.acessos.filter(function(a){ return a.unidade === cod && !a.saida; });
+  var visitas = S.acessos.filter(function(a){ return a.unidade === cod; }).slice(0,8);
+  folha('Unidade ' + u.cod, p.nome + ' · ' + p.tip + ' · ' + u.andar + (u.vaga ? ' · vaga ' + u.vaga : ' · sem vaga'),
+    '<div class="grade g2">' +
+      '<div class="cartao"><h3>Aluno</h3><div class="cnt">' +
+        '<div style="font-family:var(--serif);font-size:20px">'+esc(u.aluno)+'</div>' +
+        '<div class="mut peq">'+esc(u.curso)+'</div>' +
+        '<div class="mono" style="margin-top:6px">'+esc(u.tel)+'</div></div></div>' +
+      '<div class="cartao"><h3>Saúde · uso em emergência</h3><div class="cnt peq">' +
+        'Sangue: '+esc(u.saude.sangue||'não informado')+'<br>' +
+        'Alergia: '+esc(u.saude.alergia||'nenhuma informada')+'<br>' +
+        'Condição: '+esc(u.saude.condicao||'nenhuma informada')+'<br>' +
+        'Remédio de uso: '+esc(u.saude.remedio||'nenhum')+'<br>' +
+        'Plano de saúde: '+esc(u.saude.plano||'não informado')+'</div></div>' +
+    '</div>' +
+    cartao('Família e responsáveis',
+      (u.resp.length ? u.resp.map(function(r,i){
+        return '<div class="pill">'+esc(r.nome)+' · '+esc(r.rel)+' · <span class="mono">'+esc(r.tel)+'</span>' +
+          (r.acessoPais ? ' · <span class="et gd">acesso no app</span>' : '') + '</div>'; }).join('')
+        : '<span class="mut peq">Nenhum responsável cadastrado.</span>')) +
+    cartao('Veículos e vaga',
+      ((u.veiculos||[]).length ? u.veiculos.map(function(v){
+        return '<div class="pill"><span class="mono">'+esc(v.placa)+'</span> · '+esc(v.modelo)+' '+esc(v.cor)+
+          ' · vaga '+esc(v.vaga||'—')+'</div>'; }).join('')
+        : '<span class="mut peq">Sem veículo cadastrado — unidade sem vaga de garagem.</span>')) +
+    cartao('Autorizados a entrar sem confirmação',
+      ((u.autorizados||[]).length ? u.autorizados.map(function(a){
+        return '<div class="pill">'+esc(a.nome)+(a.doc?' · '+esc(a.doc):'')+'</div>'; }).join('')
+        : '<span class="mut peq">Ninguém. Toda visita precisa de confirmação por telefone.</span>')) +
+    ((u.restricoes||[]).length ? '<div class="faixa pg">⛔ <strong>Entrada proibida:</strong> ' +
+      esc(u.restricoes.join(' · ')) + '</div>' : '') +
+    cartao('Movimento desta unidade',
+      tabela([{t:'Entrada'},{t:'Quem'},{t:'Tipo'},{t:'Saída'}], visitas.map(function(a){
+        return '<tr><td class="num">'+dt(a.entrada)+'</td><td>'+esc(a.nome)+'</td>' +
+          '<td>'+esc(a.tipo)+'</td><td class="num">'+(a.saida?hm(a.saida):'<span class="et at">dentro</span>')+'</td></tr>';
+      }), 'Nenhuma visita registrada.'), esc(dentro.length + ' dentro agora'), true),
+    [ { txt:'Fechar', fn:fechar },
+      { txt:'Editar cadastro', cls:'p', fn:function(){ editarUnidade(cod); } } ], true);
+}
+function editarUnidade(cod){
+  var u = un(cod); if(!u) return;
+  var r = u.resp[0] || { nome:'', rel:'', tel:'', acessoPais:true, codigo:'' };
+  folha('Editar ' + u.cod, 'O que for corrigido aqui vale para a guarita inteira',
+    campos([
+      { id:'aluno', rot:'Nome do aluno', val:u.aluno },
+      { id:'tel', rot:'Telefone do aluno', val:u.tel },
+      { id:'curso', rot:'Curso e ano', val:u.curso },
+      { id:'vaga', rot:'Vaga de garagem', val:u.vaga },
+      { id:'rnome', rot:'Responsável · nome', val:r.nome },
+      { id:'rrel', rot:'Responsável · parentesco', val:r.rel },
+      { id:'rtel', rot:'Responsável · telefone', val:r.tel },
+      { id:'racesso', rot:'Responsável vê o app?', tipo:'sel', val:r.acessoPais?'sim':'nao',
+        opts:[{v:'sim',t:'Sim, com código próprio'},{v:'nao',t:'Não'}] },
+      { id:'sangue', rot:'Tipo sanguíneo', val:u.saude.sangue },
+      { id:'alergia', rot:'Alergia', val:u.saude.alergia },
+      { id:'condicao', rot:'Condição de saúde', val:u.saude.condicao },
+      { id:'remedio', rot:'Remédio de uso contínuo', val:u.saude.remedio },
+      { id:'plano', rot:'Plano de saúde e carteirinha', val:u.saude.plano },
+      { id:'autorizados', rot:'Autorizados a entrar sem confirmação (separe por vírgula)', largo:true,
+        val:(u.autorizados||[]).map(function(a){ return a.nome; }).join(', ') },
+      { id:'restricoes', rot:'Entrada PROIBIDA para (separe por vírgula)', largo:true,
+        val:(u.restricoes||[]).join(', '), dica:'Medida protetiva, ex-parceiro, cobrador — a guarita não abre por insistência' },
+      { id:'obs', rot:'Observação', tipo:'area', largo:true, val:u.obs }
+    ]),
+    [ { txt:'Cancelar', fn:function(){ fichaUnidade(cod); } },
+      { txt:'Salvar', cls:'p', fn:function(){
+        u.aluno = ler('aluno'); u.tel = ler('tel'); u.curso = ler('curso'); u.vaga = ler('vaga');
+        u.saude = { sangue:ler('sangue'), alergia:ler('alergia'), condicao:ler('condicao'),
+          remedio:ler('remedio'), plano:ler('plano') };
+        u.obs = ler('obs');
+        u.autorizados = ler('autorizados').split(',').map(function(s){ return s.trim(); })
+          .filter(Boolean).map(function(n){ return { nome:n, doc:'' }; });
+        u.restricoes = ler('restricoes').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        u.resp[0] = { nome:ler('rnome'), rel:ler('rrel'), tel:ler('rtel'),
+          acessoPais: ler('racesso') === 'sim', codigo: r.codigo || ('M7M-' + u.cod) };
+        u.demo = false;
+        gravar(); fechar(); pintar(); torrada('Cadastro de ' + u.cod + ' atualizado','','ok');
+      } } ], true);
+}
+function portalPais(){
+  var linhas = S.unidades.map(function(u){
+    var r = u.resp[0] || {};
+    return '<tr><td class="mono">'+esc(u.cod)+'</td><td>'+esc(u.aluno)+'</td>' +
+      '<td>'+esc(r.nome||'—')+'</td><td class="mono">'+esc(r.codigo||'—')+'</td>' +
+      '<td>'+(r.acessoPais?'<span class="et ok">ativo</span>':'<span class="et">desligado</span>')+'</td></tr>';
+  });
+  folha('Acesso dos pais', 'O que o responsável vê — e o que ele nunca vê',
+    '<div class="grade g2">' +
+      '<div class="cartao"><h3>O responsável vê</h3><div class="cnt peq">' +
+        '• Entradas e saídas do próprio filho<br>' +
+        '• Visitas que ele autorizou para a unidade<br>' +
+        '• Encomendas recebidas e retiradas<br>' +
+        '• Ocorrências que envolvem a unidade<br>' +
+        '• Boletos, pagamentos e consumo da unidade<br>' +
+        '• Telefones da guarita e da administração</div></div>' +
+      '<div class="cartao"><h3>O responsável não vê</h3><div class="cnt peq">' +
+        '• Dados de outro aluno ou de outra unidade<br>' +
+        '• Câmera ao vivo e gravação<br>' +
+        '• Livro de ocorrências completo do condomínio<br>' +
+        '• Telefone e documento de visitante de terceiros<br>' +
+        '• Ficha de saúde de quem não é seu filho</div></div>' +
+    '</div>' +
+    '<p class="peq mut">Cada responsável entra com o código da linha abaixo mais o telefone cadastrado. ' +
+    'Código trocado é código queimado: gere outro pela ficha da unidade.</p>' +
+    tabela([{t:'Unidade'},{t:'Aluno'},{t:'Responsável'},{t:'Código de acesso'},{t:'Situação'}], linhas),
+    [ { txt:'Fechar', fn:fechar }, { txt:'Imprimir', cls:'p', fn:function(){ window.print(); } } ], true);
+}
+
+/* ── TELEFONES ───────────────────────────────────────── */
+function v_telefones(){
+  var g = {}; S.contatos.forEach(function(c){ (g[c.grupo] = g[c.grupo] || []).push(c); });
+  var naoVerif = S.contatos.filter(function(c){ return !c.verificadoEm; }).length;
+  var blocos = Object.keys(g).map(function(k){
+    var linhas = g[k].map(function(c){
+      return '<tr><td><strong>'+esc(c.nome)+'</strong>'+(c.obs?'<div class="peq mut">'+esc(c.obs)+'</div>':'')+'</td>' +
+        '<td class="num" style="font-size:17px">'+(c.tel ? esc(c.tel) : '<span class="et ng">falta o número</span>')+'</td>' +
+        '<td>'+(c.verificadoEm ? '<span class="et ok">conferido '+dt(c.verificadoEm).slice(0,10)+'</span>'
+          : '<span class="et at">não conferido</span>')+'</td>' +
+        '<td class="dir"><button class="b s" data-fone="'+c.id+'">Editar</button></td></tr>';
+    });
+    return cartao(k, tabela([{t:'Contato'},{t:'Telefone'},{t:'Conferência'},{t:'',dir:true}], linhas), '', true);
+  }).join('');
+  return (naoVerif ? '<div class="faixa av">✆ <strong>'+naoVerif+' contatos ainda não foram conferidos.</strong> ' +
+    'Número de emergência se confere ligando, não copiando da internet. Depois de ligar, marque como conferido.</div>' : '') +
+    '<div class="linha-b" style="margin-bottom:14px"><button class="b p" data-act="novoContato">Novo contato</button>' +
+    '<button class="b" onclick="window.print()">Imprimir a lista</button></div>' +
+    '<div class="grade g2">' + blocos + '</div>';
+}
+function editarContato(id){
+  var c = null; S.contatos.forEach(function(x){ if(x.id === id) c = x; });
+  if(!c) return;
+  folha('Contato', c.grupo,
+    campos([
+      { id:'nome', rot:'Nome', val:c.nome },
+      { id:'tel', rot:'Telefone', val:c.tel },
+      { id:'grupo', rot:'Grupo', tipo:'sel', val:c.grupo,
+        opts:['Emergência Paraguai','Emergência Brasil','Condomínio','Manutenção','Utilidades','Outros'] },
+      { id:'obs', rot:'Observação', val:c.obs, largo:true },
+      { id:'verif', rot:'Você acabou de ligar e o número atende?', tipo:'sel',
+        opts:[{v:'',t:'Ainda não conferi'},{v:'sim',t:'Sim, atende — marcar como conferido'}] }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Salvar', cls:'p', fn:function(){
+        c.nome = ler('nome'); c.tel = ler('tel'); c.grupo = ler('grupo'); c.obs = ler('obs');
+        if(ler('verif') === 'sim'){ c.verificadoEm = agora(); c.verificadoPor = guarda(); }
+        gravar(); fechar(); pintar(); torrada('Contato salvo','','ok');
+      } } ]);
+}
+function novoContato(){
+  folha('Novo contato', 'Entra sem conferência — confira ligando antes de precisar',
+    campos([
+      { id:'nome', rot:'Nome' }, { id:'tel', rot:'Telefone' },
+      { id:'grupo', rot:'Grupo', tipo:'sel', opts:['Emergência Paraguai','Emergência Brasil','Condomínio','Manutenção','Utilidades','Outros'] },
+      { id:'obs', rot:'Observação', largo:true }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Adicionar', cls:'p', fn:function(){
+        S.contatos.push({ id:uid('f'), grupo:ler('grupo'), nome:ler('nome'), tel:ler('tel'),
+          obs:ler('obs'), verificadoEm:'', verificadoPor:'' });
+        gravar(); fechar(); pintar(); torrada('Contato adicionado','','ok');
+      } } ]);
+}
+
+/* ── EMERGÊNCIA ──────────────────────────────────────── */
+function v_emergencia(){
+  var ativas = S.emergencias.filter(function(e){ return !e.fim; });
+  var cards = POPS.map(function(p){
+    return '<button class="cen" data-pop="'+p.id+'"><div class="e">'+p.e+'</div>' +
+      '<div class="n">'+esc(p.nome)+'</div><div class="q">'+esc(p.q)+'</div></button>';
+  }).join('');
+  var hist = S.emergencias.slice(0,20).map(function(e){
+    return '<tr><td class="num">'+dt(e.inicio)+'</td><td>'+esc(e.cenario)+'</td>' +
+      '<td>'+esc(e.por)+'</td><td class="num">'+Object.keys(e.passos||{}).length+'</td>' +
+      '<td>'+(e.fim?dt(e.fim):'<span class="et ng">em andamento</span>')+'</td></tr>';
+  });
+  var fones = S.contatos.filter(function(c){ return c.grupo.indexOf('Emerg') === 0; }).map(function(c){
+    return '<div class="pill"><strong>'+esc(c.nome)+'</strong> <span class="mono">'+esc(c.tel||'—')+'</span></div>'; }).join('');
+  return (ativas.length ? '<div class="faixa pg">🚨 <strong>' + esc(ativas[0].cenario) + ' em andamento</strong> desde ' +
+      hm(ativas[0].inicio) + '<span class="esp"><button class="b d s" data-emg="'+ativas[0].id+'">Continuar</button></span></div>' : '') +
+    cartao('Ligue primeiro', fones + '<div class="peq mut" style="margin-top:6px">Número sem marca de conferido não foi testado. Confira em <em>Telefones</em>.</div>') +
+    '<div class="grade g3" style="margin-bottom:14px">' + cards + '</div>' +
+    cartao('Emergências registradas',
+      tabela([{t:'Início'},{t:'Cenário'},{t:'Guarda'},{t:'Passos'},{t:'Encerrada'}], hist,
+        'Nenhuma emergência registrada — que continue assim.'), '', true);
+}
+function abrirPop(id, emgId){
+  var p = null; POPS.forEach(function(x){ if(x.id === id) p = x; });
+  if(!p) return;
+  var e = null;
+  if(emgId){ S.emergencias.forEach(function(x){ if(x.id === emgId) e = x; }); }
+  if(!e){
+    e = { id:uid('em'), cenario:p.nome, pop:p.id, inicio:agora(), por:guarda(), passos:{}, notas:'', fim:null };
+    S.emergencias.unshift(e); gravar();
+    registrar('Emergência','Grave','Emergência aberta: '+p.nome,'Processo iniciado na guarita.', true);
+  }
+  function corpo(){
+    return '<div class="faixa pg">Aberta às '+hm(e.inicio)+' por '+esc(e.por)+' — cada passo grava a hora em que foi feito.</div>' +
+      p.passos.map(function(t,i){
+        var f = e.passos[i];
+        return '<div class="passo'+(f?' feito':'')+'" data-pp="'+i+'"><div class="n">'+(i+1)+'</div>' +
+          '<div class="t">'+esc(t)+'</div><div class="hr">'+(f?hm(f):'')+'</div></div>';
+      }).join('') +
+      '<div class="nunca"><strong>Nunca:</strong> ' + p.nunca.map(esc).join(' · ') + '</div>' +
+      campos([{ id:'notas', rot:'O que aconteceu, com hora', tipo:'area', largo:true, val:e.notas }]);
+  }
+  folha(p.e + '  ' + p.nome, p.q, corpo(),
+    [ { txt:'Sair sem encerrar', fn:function(){ e.notas = ler('notas'); gravar(); fechar(); pintar(); } },
+      { txt:'Encerrar e lançar no livro', cls:'p', fn:function(){
+        e.notas = ler('notas'); e.fim = agora();
+        var linha = p.passos.map(function(t,i){
+          return (e.passos[i] ? hm(e.passos[i]) : 'não feito') + ' — ' + t; }).join('\n');
+        registrar('Emergência','Grave','Encerrada: '+p.nome,
+          'Aberta ' + dt(e.inicio) + ', encerrada ' + dt(e.fim) + '.\n\n' + linha +
+          (e.notas ? '\n\nRelato: ' + e.notas : ''), true);
+        gravar(); fechar(); pintar(); torrada('Emergência encerrada','Linha do tempo foi para o livro','ok');
+      } } ], true);
+  document.getElementById('fBody').addEventListener('click', function(ev){
+    var el = ev.target.closest('[data-pp]'); if(!el) return;
+    var i = el.getAttribute('data-pp');
+    if(e.passos[i]) delete e.passos[i]; else e.passos[i] = agora();
+    gravar();
+    var n = ler('notas');
+    document.getElementById('fBody').innerHTML = corpo();
+    var en = document.getElementById('c_notas'); if(en) en.value = n;
+  });
+}
+
+/* ── OCORRÊNCIAS ─────────────────────────────────────── */
+function v_ocorrencias(){
+  var q = BUSCA.toLowerCase();
+  var lista = S.ocorrencias.filter(function(o){
+    return !q || (o.titulo+' '+o.texto+' '+o.tipo+' '+o.autor).toLowerCase().indexOf(q) >= 0; }).slice(0,80);
+  var linhas = lista.map(function(o){
+    var et = o.grav === 'Grave' ? 'ng' : o.grav === 'Atenção' ? 'at' : '';
+    return '<tr><td class="num mut">'+dt(o.quando)+'</td>' +
+      '<td><span class="et '+et+'">'+esc(o.grav)+'</span></td>' +
+      '<td><strong>'+esc(o.titulo)+'</strong><div class="peq mut">'+esc(o.tipo)+
+        (o.auto?' · registro automático':'')+'</div></td>' +
+      '<td class="peq">'+esc((o.texto||'').slice(0,90))+((o.texto||'').length>90?'…':'')+'</td>' +
+      '<td class="peq">'+esc(o.autor)+'</td>' +
+      '<td>'+(o.fechada?'<span class="et">fechada</span>':'<span class="et at">aberta</span>')+'</td>' +
+      '<td class="dir"><button class="b s" data-oc="'+o.id+'">Abrir</button></td></tr>';
+  });
+  return avisoTurno() +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="novaOcorrencia">Registrar ocorrência</button>' +
+      '<input type="text" id="bsc" placeholder="Buscar no livro" value="'+esc(BUSCA)+'" style="max-width:380px">' +
+      '<button class="b" onclick="window.print()">Imprimir</button>' +
+    '</div>' +
+    '<div class="faixa">▤ Registro é prova. Escreva o que viu e ouviu, com hora — sem opinião, sem apagar depois. ' +
+    'Correção entra como adendo.</div>' +
+    cartao('Livro de ocorrências',
+      tabela([{t:'Quando'},{t:'Gravidade'},{t:'Título'},{t:'Relato'},{t:'Quem registrou'},{t:'Situação'},{t:'',dir:true}],
+        linhas, 'O livro está limpo.'), esc(S.ocorrencias.length + ' registros'), true);
+}
+function novaOcorrencia(){
+  folha('Registrar ocorrência', 'O que não está no livro não aconteceu',
+    campos([
+      { id:'tipo', rot:'Tipo', tipo:'sel', opts:['Segurança','Acesso','Barulho e convivência','Dano ao patrimônio',
+        'Manutenção','CFTV','Chaves','Encomenda','Saúde','Emergência','Furto ou roubo','Veículo','Outro'] },
+      { id:'grav', rot:'Gravidade', tipo:'sel', opts:['Informação','Atenção','Grave'] },
+      { id:'titulo', rot:'Título curto', largo:true },
+      { id:'texto', rot:'O que aconteceu — hora, local, quem, o que foi dito', tipo:'area', largo:true },
+      { id:'unidade', rot:'Unidade envolvida', tipo:'sel', opts:selUnidades(true) },
+      { id:'camera', rot:'Câmera que cobre o trecho', dica:'Ex.: C06 — marque para pedir a gravação antes que ela seja sobrescrita' }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar', cls:'p', fn:function(){
+        var t = ler('titulo');
+        if(!t){ torrada('Falta o título','','ng'); return; }
+        S.ocorrencias.unshift({ id:uid('oc'), quando:agora(), tipo:ler('tipo'), grav:ler('grav'),
+          titulo:t, texto:ler('texto'), unidade:ler('unidade'), camera:ler('camera'),
+          autor:guarda(), auto:false, adendos:[], fechada:false });
+        gravar(); fechar(); pintar(); torrada('Ocorrência registrada','','ok');
+      } } ], true);
+}
+function verOcorrencia(id){
+  var o = null; S.ocorrencias.forEach(function(x){ if(x.id === id) o = x; });
+  if(!o) return;
+  folha(o.titulo, o.tipo + ' · ' + o.grav + ' · ' + dt(o.quando) + ' · ' + o.autor,
+    '<p style="white-space:pre-wrap">'+esc(o.texto||'—')+'</p>' +
+    (o.unidade ? '<div class="pill">Unidade '+esc(o.unidade)+'</div>' : '') +
+    (o.camera ? '<div class="pill">Câmera '+esc(o.camera)+'</div>' : '') +
+    (o.adendos.length ? cartao('Adendos', o.adendos.map(function(a){
+      return '<div class="peq"><span class="mono mut">'+dt(a.quando)+'</span> · '+esc(a.autor)+' — '+esc(a.texto)+'</div>';
+    }).join('')) : '') +
+    campos([{ id:'adendo', rot:'Adendo (o original não é alterado)', tipo:'area', largo:true }]),
+    [ { txt:'Fechar', fn:fechar },
+      { txt:o.fechada ? 'Reabrir' : 'Marcar como resolvida', fn:function(){
+        o.fechada = !o.fechada; gravar(); fechar(); pintar(); } },
+      { txt:'Gravar adendo', cls:'p', fn:function(){
+        var t = ler('adendo');
+        if(!t){ fechar(); return; }
+        o.adendos.push({ quando:agora(), autor:guarda(), texto:t });
+        gravar(); fechar(); pintar(); torrada('Adendo gravado','O texto original ficou intacto','ok');
+      } } ]);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   ADMINISTRAÇÃO — caixa, auditoria de custo e receita, turno
+   ══════════════════════════════════════════════════════════════ */
+
+function v_caixa(){
+  var hoje = S.vendas.filter(function(v){ return dia(v.quando) === dia(); });
+  var totHoje = hoje.reduce(function(a,v){ return a + v.total; }, 0);
+  var fiado = S.vendas.filter(function(v){ return v.forma === 'Fiado' && !v.quitado; });
+  var totFiado = fiado.reduce(function(a,v){ return a + v.total; }, 0);
+  var porItem = {};
+  hoje.forEach(function(v){ porItem[v.item] = (porItem[v.item]||0) + v.qtd; });
+
+  var linhas = S.vendas.slice(0,50).map(function(v){
+    return '<tr><td class="num mut">'+dt(v.quando)+'</td><td>'+esc(v.item)+'</td>' +
+      '<td class="num">'+v.qtd+'</td><td class="num">'+brl(v.total)+'</td>' +
+      '<td>'+esc(v.forma)+(v.forma==='Fiado'&&!v.quitado?' <span class="et ng">em aberto</span>':'')+'</td>' +
+      '<td>'+esc(v.unidade||'—')+'</td><td class="peq mut">'+esc(v.por)+'</td>' +
+      '<td class="dir">'+(v.forma==='Fiado'&&!v.quitado?'<button class="b s" data-quitar="'+v.id+'">Quitar</button>':'')+'</td></tr>';
+  });
+  var resumo = Object.keys(porItem).map(function(k){
+    return '<div class="pill">'+esc(k)+' · <strong>'+porItem[k]+'</strong></div>'; }).join('') ||
+    '<span class="mut peq">Nada vendido hoje.</span>';
+
+  return avisoTurno() +
+    '<div class="grade g4" style="margin-bottom:14px">' +
+      '<div class="kpi"><div class="r">Vendido hoje</div><div class="v" style="font-size:24px">'+brl0(totHoje)+'</div>' +
+        '<div class="o">'+hoje.length+' vendas</div></div>' +
+      '<div class="kpi'+(totFiado?' at':'')+'"><div class="r">Fiado em aberto</div><div class="v" style="font-size:24px">'+brl0(totFiado)+'</div>' +
+        '<div class="o">'+fiado.length+' lançamentos</div></div>' +
+      '<div class="kpi"><div class="r">Vendas no total</div><div class="v" style="font-size:24px">'+S.vendas.length+'</div>' +
+        '<div class="o">desde a instalação</div></div>' +
+      '<div class="kpi"><div class="r">Itens no balcão</div><div class="v" style="font-size:24px">'+ITENS_VENDA.length+'</div>' +
+        '<div class="o">preço de 10/08/2026</div></div>' +
+    '</div>' +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="novaVenda">Nova venda</button>' +
+      '<button class="b" data-act="fecharCaixa">Fechar o caixa do turno</button></div>' +
+    cartao('Vendido hoje, por item', resumo) +
+    cartao('Movimento do caixa',
+      tabela([{t:'Quando'},{t:'Item'},{t:'Qtd'},{t:'Total'},{t:'Forma'},{t:'Unidade'},{t:'Guarda'},{t:'',dir:true}],
+        linhas, 'Nenhuma venda registrada.'), '', true);
+}
+function novaVenda(){
+  folha('Venda na guarita', 'Toda saída de item passa pelo caixa — inclusive fiado',
+    campos([
+      { id:'item', rot:'Item', tipo:'sel', opts:ITENS_VENDA.map(function(i){ return i[0]; }) },
+      { id:'qtd', rot:'Quantidade', tipo:'num', val:1 },
+      { id:'preco', rot:'Preço unitário (R$)', tipo:'num', val:ITENS_VENDA[0][1] },
+      { id:'forma', rot:'Forma de pagamento', tipo:'sel', opts:FORMAS },
+      { id:'unidade', rot:'Unidade', tipo:'sel', opts:selUnidades(true) },
+      { id:'obs', rot:'Observação', largo:true }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar venda', cls:'p', fn:function(){
+        var q = lerNum('qtd') || 1, p = lerNum('preco');
+        var v = { id:uid('vd'), quando:agora(), item:ler('item'), qtd:q, preco:p, total:q*p,
+          forma:ler('forma'), unidade:ler('unidade'), obs:ler('obs'), por:guarda(), quitado:ler('forma')!=='Fiado' };
+        S.vendas.unshift(v);
+        S.lancamentos.unshift({ id:uid('lc'), quando:agora(), sentido:'entrada',
+          categoria:'Outros', desc:'Venda na guarita: '+v.item, valor:v.total, forma:v.forma,
+          fornecedor:'', nota:false, por:guarda(), origem:'caixa' });
+        gravar(); fechar(); pintar(); torrada('Venda registrada '+brl(v.total),'','ok');
+      } } ], true);
+  var sel = document.getElementById('c_item');
+  if(sel) sel.addEventListener('change', function(){
+    var v = this.value;
+    ITENS_VENDA.forEach(function(i){ if(i[0] === v) document.getElementById('c_preco').value = i[1]; });
+  });
+}
+function fecharCaixa(){
+  var t = S.turno;
+  var desde = t ? t.inicio : dia() + 'T00:00:00';
+  var vs = S.vendas.filter(function(v){ return v.quando >= desde; });
+  var porForma = {};
+  vs.forEach(function(v){ porForma[v.forma] = (porForma[v.forma]||0) + v.total; });
+  var total = vs.reduce(function(a,v){ return a + v.total; }, 0);
+  folha('Fechamento de caixa', (t ? 'Turno de ' + t.guarda + ' desde ' + hm(t.inicio) : 'Sem turno aberto — usando o dia'),
+    tabela([{t:'Forma'},{t:'Valor',dir:true}], Object.keys(porForma).map(function(k){
+      return '<tr><td>'+esc(k)+'</td><td class="dir num">'+brl(porForma[k])+'</td></tr>'; }),
+      'Nada vendido neste turno.') +
+    '<div class="faixa" style="margin-top:12px">Total do turno: <strong>'+brl(total)+'</strong> em '+vs.length+' vendas</div>' +
+    campos([{ id:'contado', rot:'Dinheiro contado na gaveta (R$)', tipo:'num' },
+      { id:'obs', rot:'Observação do fechamento', tipo:'area', largo:true }]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Registrar fechamento', cls:'p', fn:function(){
+        var contado = lerNum('contado'), esperado = porForma['Dinheiro'] || 0;
+        var dif = contado - esperado;
+        registrar('Caixa', Math.abs(dif) > 0.01 ? 'Atenção' : 'Informação',
+          'Fechamento de caixa: ' + brl(total),
+          'Esperado em dinheiro ' + brl(esperado) + ', contado ' + brl(contado) +
+          ', diferença ' + brl(dif) + '. ' + ler('obs'), true);
+        gravar(); fechar(); pintar();
+        torrada('Caixa fechado', Math.abs(dif) > 0.01 ? 'Diferença de ' + brl(dif) : 'Bateu certo',
+          Math.abs(dif) > 0.01 ? 'ng' : 'ok');
+      } } ]);
+}
+
+/* ── AUDITORIA ───────────────────────────────────────── */
+var ANO_FILTRO = String(new Date().getFullYear());
+
+function v_auditoria(){
+  var ano = ANO_FILTRO;
+  var doAno = S.lancamentos.filter(function(l){ return dia(l.quando).slice(0,4) === ano; });
+  var ent = doAno.filter(function(l){ return l.sentido === 'entrada'; });
+  var sai = doAno.filter(function(l){ return l.sentido === 'saida'; });
+  var tE = ent.reduce(function(a,l){ return a + l.valor; }, 0);
+  var tS = sai.reduce(function(a,l){ return a + l.valor; }, 0);
+  var res = tE - tS;
+  var semNota = sai.filter(function(l){ return !l.nota; });
+  var tSemNota = semNota.reduce(function(a,l){ return a + l.valor; }, 0);
+
+  /* receita potencial dos 19 apartamentos, base 10/08/2026 */
+  var potMes = S.unidades.reduce(function(a,u){ return a + PRODUTOS[u.tipo].preco; }, 0);
+
+  var meses = {};
+  doAno.forEach(function(l){
+    var m = mes(l.quando);
+    meses[m] = meses[m] || { e:0, s:0 };
+    meses[m][l.sentido === 'entrada' ? 'e' : 's'] += l.valor;
+  });
+  var linhasMes = Object.keys(meses).sort().reverse().map(function(m){
+    var x = meses[m], r = x.e - x.s;
+    return '<tr><td class="mono">'+esc(m)+'</td><td class="dir num">'+brl(x.e)+'</td>' +
+      '<td class="dir num">'+brl(x.s)+'</td>' +
+      '<td class="dir num" style="color:'+(r>=0?'var(--pos)':'var(--neg)')+'">'+brl(r)+'</td></tr>';
+  });
+
+  var porCat = {};
+  sai.forEach(function(l){ porCat[l.categoria] = (porCat[l.categoria]||0) + l.valor; });
+  var linhasCat = Object.keys(porCat).sort(function(a,b){ return porCat[b] - porCat[a]; }).map(function(k){
+    var pc = tS ? (porCat[k]/tS*100) : 0;
+    return '<tr><td>'+esc(k)+'</td><td class="dir num">'+brl(porCat[k])+'</td>' +
+      '<td class="dir num">'+pc.toFixed(1)+'%</td>' +
+      '<td><div style="height:6px;border-radius:4px;background:var(--gold);width:'+Math.max(2,pc)+'%"></div></td></tr>';
+  });
+
+  var ult = S.lancamentos.slice(0,40).map(function(l){
+    return '<tr><td class="num mut">'+dt(l.quando)+'</td>' +
+      '<td>'+(l.sentido==='entrada'?'<span class="et ok">entrada</span>':'<span class="et ng">saída</span>')+'</td>' +
+      '<td>'+esc(l.categoria)+'<div class="peq mut">'+esc(l.desc)+'</div></td>' +
+      '<td>'+esc(l.fornecedor||'—')+'</td><td class="dir num">'+brl(l.valor)+'</td>' +
+      '<td>'+esc(l.forma)+'</td>' +
+      '<td>'+(l.sentido==='saida' ? (l.nota?'<span class="et ok">com nota</span>':'<span class="et at">sem nota</span>') : '')+'</td>' +
+      '<td class="dir"><button class="b s" data-lanc="'+l.id+'">Ver</button></td></tr>';
+  });
+
+  var anos = {};
+  S.lancamentos.forEach(function(l){ anos[dia(l.quando).slice(0,4)] = 1; });
+  anos[String(new Date().getFullYear())] = 1;
+
+  return avisoDemo() + '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="novaSaida">Lançar gasto ou compra</button>' +
+      '<button class="b" data-act="novaEntrada">Lançar recebimento</button>' +
+      '<select id="selAno" style="max-width:140px">' + Object.keys(anos).sort().reverse().map(function(a){
+        return '<option'+(a===ano?' selected':'')+'>'+a+'</option>'; }).join('') + '</select>' +
+      '<button class="b" onclick="window.print()">Imprimir o ano</button>' +
+    '</div>' +
+    '<div class="grade g4" style="margin-bottom:14px">' +
+      '<div class="kpi"><div class="r">Entrou em '+ano+'</div><div class="v" style="font-size:24px;color:var(--pos)">'+brl0(tE)+'</div><div class="o">'+ent.length+' lançamentos</div></div>' +
+      '<div class="kpi"><div class="r">Saiu em '+ano+'</div><div class="v" style="font-size:24px;color:var(--neg)">'+brl0(tS)+'</div><div class="o">'+sai.length+' lançamentos</div></div>' +
+      '<div class="kpi'+(res<0?' al':'')+'"><div class="r">Resultado do ano</div><div class="v" style="font-size:24px">'+brl0(res)+'</div>' +
+        '<div class="o">'+(res>=0?'ganho':'prejuízo')+' apurado</div></div>' +
+      '<div class="kpi'+(tSemNota?' at':'')+'"><div class="r">Gasto sem nota</div><div class="v" style="font-size:24px">'+brl0(tSemNota)+'</div>' +
+        '<div class="o">'+semNota.length+' lançamentos sem comprovante</div></div>' +
+    '</div>' +
+    '<div class="faixa">∑ O resultado acima usa só o que foi lançado aqui. Receita cheia dos 19 apartamentos, ' +
+      'a preço de 10/08/2026, seria <strong>'+brl0(potMes)+'</strong> por mês — ' + brl0(potMes*12) + ' no ano, ' +
+      'com ocupação total. A diferença entre esse número e a coluna de entrada é o que a operação deixou na mesa.</div>' +
+    '<div class="grade g2">' +
+      cartao('Mês a mês', tabela([{t:'Mês'},{t:'Entrou',dir:true},{t:'Saiu',dir:true},{t:'Resultado',dir:true}],
+        linhasMes, 'Nenhum lançamento em ' + ano), '', true) +
+      cartao('Para onde foi o dinheiro', tabela([{t:'Categoria'},{t:'Valor',dir:true},{t:'%',dir:true},{t:''}],
+        linhasCat, 'Nenhuma saída lançada.'), '', true) +
+    '</div>' +
+    cartao('Lançamentos',
+      tabela([{t:'Quando'},{t:'Sentido'},{t:'Categoria'},{t:'Fornecedor'},{t:'Valor',dir:true},{t:'Forma'},{t:'Nota'},{t:'',dir:true}],
+        ult, 'Nada lançado ainda. Todo gasto do condomínio entra aqui — é isso que fecha o ano.'),
+      esc(S.lancamentos.length + ' no total'), true);
+}
+function novoLancamento(sentido){
+  var saida = sentido === 'saida';
+  folha(saida ? 'Lançar gasto ou compra' : 'Lançar recebimento',
+    saida ? 'Sem nota, o gasto entra assim mesmo — mas fica marcado' : 'Aluguel, lavanderia, vending, mercado, estadia',
+    campos([
+      { id:'data', rot:'Data', tipo:'data', val:dia() },
+      { id:'valor', rot:'Valor (R$)', tipo:'num' },
+      { id:'categoria', rot:'Categoria', tipo:'sel', opts: saida ? CAT_SAIDA : CAT_ENTRADA },
+      { id:'forma', rot:'Forma', tipo:'sel', opts:FORMAS },
+      { id:'fornecedor', rot: saida ? 'Fornecedor' : 'De quem veio' },
+      { id:'unidade', rot:'Unidade (se for de uma)', tipo:'sel', opts:selUnidades(true) },
+      { id:'desc', rot:'Descrição — o que foi comprado ou recebido', largo:true },
+      { id:'nota', rot: saida ? 'Tem nota fiscal ou recibo?' : 'Tem comprovante?', tipo:'sel',
+        opts:[{v:'sim',t:'Sim, guardada'},{v:'nao',t:'Não'}] },
+      { id:'autorizou', rot:'Quem autorizou', dica:'Compra sem autorização é achado de auditoria' }
+    ]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Lançar', cls:'p', fn:function(){
+        var v = lerNum('valor');
+        if(!v){ torrada('Falta o valor','','ng'); return; }
+        var d = ler('data') || dia();
+        S.lancamentos.unshift({ id:uid('lc'), quando:d + 'T' + hhmmAgora() + ':00',
+          sentido:sentido, categoria:ler('categoria'), desc:ler('desc'), valor:v,
+          forma:ler('forma'), fornecedor:ler('fornecedor'), unidade:ler('unidade'),
+          nota: ler('nota') === 'sim', autorizou:ler('autorizou'), por:guarda(), origem:'manual' });
+        gravar(); fechar(); pintar(); torrada('Lançado ' + brl(v), '', 'ok');
+      } } ], true);
+}
+function hhmmAgora(){ var d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function verLancamento(id){
+  var l = null; S.lancamentos.forEach(function(x){ if(x.id === id) l = x; });
+  if(!l) return;
+  folha(l.desc || l.categoria, dt(l.quando) + ' · ' + (l.sentido === 'entrada' ? 'entrada' : 'saída'),
+    '<div class="grade g2">' +
+      '<div class="cartao"><h3>Valor</h3><div class="cnt" style="font-family:var(--mono);font-size:26px">'+brl(l.valor)+'</div></div>' +
+      '<div class="cartao"><h3>Como foi pago</h3><div class="cnt">'+esc(l.forma)+'</div></div>' +
+    '</div>' +
+    '<div class="peq">Categoria: '+esc(l.categoria)+'<br>Fornecedor: '+esc(l.fornecedor||'—')+
+    '<br>Unidade: '+esc(l.unidade||'—')+'<br>Autorizou: '+esc(l.autorizou||'não informado')+
+    '<br>Comprovante: '+(l.nota?'guardado':'<strong style="color:var(--neg)">não existe</strong>')+
+    '<br>Registrado por: '+esc(l.por)+' · origem '+esc(l.origem)+'</div>',
+    [ { txt:'Fechar', fn:fechar } ]);
+}
+
+/* ── TURNO ───────────────────────────────────────────── */
+function v_turno(){
+  var t = S.turno;
+  var hist = S.turnos.slice(0,20).map(function(x){
+    return '<tr><td>'+esc(x.guarda)+'</td><td class="num">'+dt(x.inicio)+'</td>' +
+      '<td class="num">'+(x.fim?dt(x.fim):'<span class="et at">aberto</span>')+'</td>' +
+      '<td class="num">'+(x.acessos||0)+'</td><td class="num">'+(x.ocorrencias||0)+'</td>' +
+      '<td class="peq">'+esc(x.pendencias||'—')+'</td></tr>';
+  });
+  var corpo;
+  if(t){
+    var desde = t.inicio;
+    var ac = S.acessos.filter(function(a){ return a.entrada >= desde; }).length;
+    var oc = S.ocorrencias.filter(function(o){ return o.quando >= desde; }).length;
+    var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; });
+    corpo = '<div class="grade g4" style="margin-bottom:14px">' +
+      '<div class="kpi"><div class="r">Guarda</div><div class="v" style="font-size:20px">'+esc(t.guarda)+'</div><div class="o">'+esc(t.posto||'')+'</div></div>' +
+      '<div class="kpi"><div class="r">Aberto desde</div><div class="v" style="font-size:20px">'+hm(t.inicio)+'</div><div class="o">há '+decorrido(t.inicio)+'</div></div>' +
+      '<div class="kpi"><div class="r">Acessos no turno</div><div class="v" style="font-size:20px">'+ac+'</div><div class="o">entradas registradas</div></div>' +
+      '<div class="kpi'+(fora.length?' at':'')+'"><div class="r">Chaves fora</div><div class="v" style="font-size:20px">'+fora.length+'</div><div class="o">'+oc+' ocorrências</div></div>' +
+      '</div>' +
+      cartao('Checklist recebido na abertura',
+        CHECK_TURNO.map(function(c,i){
+          return '<div class="passo'+(t.checkIn && t.checkIn[i] ? ' feito' : '')+'"><div class="n">'+(i+1)+'</div>' +
+            '<div class="t">'+esc(c)+'</div><div class="hr">'+(t.checkIn && t.checkIn[i] ? hm(t.checkIn[i]) : 'não marcado')+'</div></div>';
+        }).join('')) +
+      '<div class="linha-b"><button class="b d" data-act="fecharTurno">Fechar turno e passar o posto</button>' +
+      '<button class="b" data-act="relatorioTurno">Relatório do turno</button></div>';
+  } else {
+    corpo = '<div class="faixa av">Nenhum turno aberto. Cada registro feito sem turno sai com a etiqueta ' +
+      '"sem turno aberto" — o que enfraquece o valor de prova do livro.</div>' +
+      '<div class="linha-b"><button class="b p" data-act="abrirTurno">Abrir turno</button></div>';
+  }
+  return corpo + cartao('Turnos anteriores',
+    tabela([{t:'Guarda'},{t:'Início'},{t:'Fim'},{t:'Acessos'},{t:'Ocorrências'},{t:'Pendências passadas'}],
+      hist, 'Nenhum turno fechado ainda.'), '', true);
+}
+function abrirTurno(){
+  var pend = S.turnos.length ? (S.turnos[0].pendencias || '') : '';
+  folha('Abrir turno', 'Marque o que você conferiu de verdade — não o que costuma estar certo',
+    (pend ? '<div class="faixa av">Pendência deixada pelo turno anterior: <strong>'+esc(pend)+'</strong></div>' : '') +
+    campos([{ id:'guarda', rot:'Nome de quem assume' },
+      { id:'posto', rot:'Posto', tipo:'sel', opts:['Guarita','Recepção','Ronda','Guarita + recepção'] }]) +
+    '<div id="chk">' + CHECK_TURNO.map(function(c,i){
+      return '<div class="passo" data-chk="'+i+'"><div class="n">'+(i+1)+'</div><div class="t">'+esc(c)+'</div><div class="hr"></div></div>';
+    }).join('') + '</div>',
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Abrir turno', cls:'p', fn:function(){
+        var g = ler('guarda');
+        if(!g){ torrada('Falta o nome','Turno sem nome não vale como prova','ng'); return; }
+        var chk = {};
+        Array.prototype.forEach.call(document.querySelectorAll('#chk .passo.feito'), function(e){
+          chk[e.getAttribute('data-chk')] = agora(); });
+        S.turno = { id:uid('tn'), guarda:g, posto:ler('posto'), inicio:agora(), checkIn:chk };
+        registrar('Turno','Informação','Turno aberto por ' + g,
+          'Posto ' + ler('posto') + '. Itens conferidos na abertura: ' + Object.keys(chk).length +
+          ' de ' + CHECK_TURNO.length + '.', true);
+        gravar(); fechar(); pintar(); torrada('Turno aberto · ' + g, '', 'ok');
+      } } ], true);
+  document.getElementById('chk').addEventListener('click', function(ev){
+    var el = ev.target.closest('[data-chk]'); if(!el) return;
+    el.classList.toggle('feito');
+    el.querySelector('.hr').textContent = el.classList.contains('feito') ? hhmmAgora() : '';
+  });
+}
+function fecharTurno(){
+  var t = S.turno; if(!t) return;
+  var desde = t.inicio;
+  var ac = S.acessos.filter(function(a){ return a.entrada >= desde; });
+  var dentro = S.acessos.filter(function(a){ return !a.saida; });
+  var oc = S.ocorrencias.filter(function(o){ return o.quando >= desde; });
+  var fora = S.chaves.filter(function(k){ return k.estado !== 'no quadro'; });
+  var enc = S.encomendas.filter(function(e){ return !e.retiradoEm; });
+  folha('Fechar turno', t.guarda + ' · aberto há ' + decorrido(t.inicio),
+    '<div class="faixa">O turno seguinte recebe isto por escrito:</div>' +
+    '<ul class="peq">' +
+      '<li>'+ac.length+' entradas registradas · <strong>'+dentro.length+'</strong> pessoas ainda dentro</li>' +
+      '<li><strong>'+fora.length+'</strong> chaves fora do quadro'+(fora.length?': '+fora.map(function(k){ return k.cod+' com '+k.fora.quem; }).join(', '):'')+'</li>' +
+      '<li>'+enc.length+' encomendas aguardando retirada</li>' +
+      '<li>'+oc.length+' ocorrências lançadas no turno</li>' +
+    '</ul>' +
+    campos([{ id:'pend', rot:'Pendências que o próximo turno precisa saber', tipo:'area', largo:true },
+      { id:'quem', rot:'Quem está assumindo agora' }]),
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Fechar e passar', cls:'p', fn:function(){
+        t.fim = agora(); t.pendencias = ler('pend'); t.passouPara = ler('quem');
+        t.acessos = ac.length; t.ocorrencias = oc.length; t.chavesFora = fora.length;
+        S.turnos.unshift(t);
+        registrar('Turno','Informação','Turno de ' + t.guarda + ' encerrado',
+          'Passado para ' + (t.passouPara || 'não informado') + '. ' +
+          dentro.length + ' pessoas dentro, ' + fora.length + ' chaves fora, ' +
+          enc.length + ' encomendas pendentes. Pendências: ' + (t.pendencias || 'nenhuma'), true);
+        S.turno = null; gravar(); fechar(); pintar();
+        torrada('Turno fechado', 'Passagem registrada no livro', 'ok');
+      } } ], true);
+}
+function relatorioTurno(){
+  var t = S.turno; if(!t) return;
+  var desde = t.inicio;
+  var ac = S.acessos.filter(function(a){ return a.entrada >= desde; });
+  var oc = S.ocorrencias.filter(function(o){ return o.quando >= desde; });
+  var rd = S.rondas.filter(function(r){ return r.inicio >= desde; });
+  folha('Relatório do turno', t.guarda + ' · desde ' + dt(t.inicio),
+    cartao('Acessos', tabela([{t:'Hora'},{t:'Quem'},{t:'Tipo'},{t:'Unidade'},{t:'Saída'}], ac.map(function(a){
+      return '<tr><td class="num">'+hm(a.entrada)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.tipo)+'</td>' +
+        '<td>'+esc(a.unidade||'—')+'</td><td class="num">'+(a.saida?hm(a.saida):'dentro')+'</td></tr>'; }),
+      'Nenhum acesso no turno.'), '', true) +
+    cartao('Ocorrências', tabela([{t:'Hora'},{t:'Gravidade'},{t:'Título'}], oc.map(function(o){
+      return '<tr><td class="num">'+hm(o.quando)+'</td><td>'+esc(o.grav)+'</td><td>'+esc(o.titulo)+'</td></tr>'; }),
+      'Nenhuma ocorrência.'), '', true) +
+    cartao('Rondas', tabela([{t:'Hora'},{t:'Pontos'},{t:'Observação'}], rd.map(function(r){
+      return '<tr><td class="num">'+hm(r.inicio)+'</td><td>'+Object.keys(r.pontos||{}).length+'/'+PONTOS.length+'</td>' +
+        '<td class="peq">'+esc(r.obs||'—')+'</td></tr>'; }), 'Nenhuma ronda no turno.'), '', true),
+    [ { txt:'Fechar', fn:fechar }, { txt:'Imprimir', cls:'p', fn:function(){ window.print(); } } ], true);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   EXEMPLOS DE OPERAÇÃO
+   Movimento fictício para a tela nascer com vida: 4 a 6 registros
+   por aba, mais o ano lançado na auditoria. Tudo marcado como
+   exemplo — some inteiro no botão "Apagar dados de demonstração".
+   ══════════════════════════════════════════════════════════════ */
+
+function _min(m){ return new Date(Date.now() - m*60000).toISOString(); }
+function _dias(d, h, mi){
+  var x = new Date(); x.setDate(x.getDate() - d);
+  x.setHours(h==null?10:h, mi==null?0:mi, 0, 0);
+  return x.toISOString();
+}
+function _mesDia(mes, d, h){
+  var ano = new Date().getFullYear();
+  return new Date(ano, mes-1, d, h==null?10:h, 0, 0).toISOString();
+}
+
+function movimentoExemplo(st){
+  var G1 = 'Wilson Aquino', G2 = 'Denis Cardozo', G3 = 'Marlene Ojeda';
+
+  /* ── turno aberto e três fechados ─────────────────── */
+  st.turno = { id:'tn-ex', guarda:G1, posto:'Guarita + recepção', inicio:_min(258),
+    checkIn:{ 0:_min(256), 1:_min(255), 2:_min(254), 3:_min(252), 5:_min(250), 7:_min(249) } };
+  st.turnos = [
+    { id:'tn-3', guarda:G2, posto:'Guarita', inicio:_dias(1,18), fim:_dias(1,23,59),
+      acessos:14, ocorrencias:3, chavesFora:2, pendencias:'Chave A08 continua com o zelador. Câmera C18 sem imagem desde as 21h.', passouPara:G1 },
+    { id:'tn-2', guarda:G3, posto:'Recepção', inicio:_dias(1,6), fim:_dias(1,18),
+      acessos:22, ocorrencias:1, chavesFora:1, pendencias:'Encomenda grande da unidade P03 não coube no locker, está no armário da guarita.', passouPara:G2 },
+    { id:'tn-1', guarda:G1, posto:'Guarita', inicio:_dias(2,18), fim:_dias(2,6),
+      acessos:9, ocorrencias:2, chavesFora:0, pendencias:'Nenhuma.', passouPara:G3 }
+  ];
+
+  /* ── acessos: 3 dentro agora, 3 já saíram ─────────── */
+  st.acessos = [
+    { id:'ac-1', tipo:'Entrega / delivery', nome:'Éder Villalba', doc:'CI 4.882.117', empresa:'Delivery · moto',
+      unidade:'T03', autorizadoPor:'Carla Nunes', placa:'ABC-1234', veiculo:'Honda CG vermelha',
+      obs:'Entrega na portaria, morador desceu.', entrada:_min(11), saida:null, por:G1 },
+    { id:'ac-2', tipo:'Prestador de serviço', nome:'Sandro Riquelme', doc:'CI 3.104.552', empresa:'Frio Sul Refrigeração',
+      unidade:'P04', autorizadoPor:'Lucas Benítez', placa:'HJK-7781', veiculo:'Fiorino branca',
+      obs:'Limpeza do split. Previsão de 2 horas.', entrada:_min(96), saida:null, por:G1 },
+    { id:'ac-3', tipo:'Familiar de aluno', nome:'Rita Duarte', doc:'RG 12.884.331 MS', empresa:'',
+      unidade:'T01', autorizadoPor:'Ana Duarte', placa:'MSC-2H09', veiculo:'Onix prata',
+      obs:'Mãe da aluna, fica o fim de semana.', entrada:_min(42), saida:null, por:G1 },
+    { id:'ac-4', tipo:'Visita comercial (corretor)', nome:'Hélio Sanabria', doc:'CI 2.771.019', empresa:'M7M · comercial',
+      unidade:'ADM', autorizadoPor:'Administração', placa:'PJC-0455', veiculo:'Corolla preto',
+      obs:'Levou casal para ver a unidade modelo.', entrada:_min(320), saida:_min(233), permanencia:'1h27', por:G2, saidaPor:G1 },
+    { id:'ac-5', tipo:'Táxi / aplicativo', nome:'Motorista · app', doc:'não apresentou', empresa:'Aplicativo',
+      unidade:'P08', autorizadoPor:'Paula Giménez', placa:'NRT-9002', veiculo:'Etios branco',
+      obs:'Só embarque na cancela, não subiu.', entrada:_min(390), saida:_min(384), permanencia:'6 min', por:G2, saidaPor:G2 },
+    { id:'ac-6', tipo:'Mudança', nome:'Transportes Aurora', doc:'CNPJ na recepção', empresa:'Transportes Aurora',
+      unidade:'D02', autorizadoPor:'Sofia Aquino', placa:'AUR-3311', veiculo:'Caminhão baú',
+      obs:'Mudança de entrada autorizada pela administração. Protetor de elevador não se aplica.',
+      entrada:_dias(1,14), saida:_dias(1,17,30), permanencia:'3h30', por:G3, saidaPor:G3 }
+  ];
+
+  /* ── encomendas: 3 na portaria, 2 entregues ───────── */
+  st.encomendas = [
+    { id:'en-1', unidade:'P03', destinatario:'Karina Lopes', transportadora:'Correios',
+      codigo:'OM392841175BR', local:'Armário da guarita', volume:'Caixa grande',
+      obs:'Não coube no locker. Pesada.', recebidoEm:_dias(4,11), recebidoPor:G3,
+      retiradoEm:null, retiradoPor:'', docRetirada:'' },
+    { id:'en-2', unidade:'T06', destinatario:'Felipe Adorno', transportadora:'Mercado Envios',
+      codigo:'MLB-77120934', local:'Locker 02', volume:'Caixa média', obs:'',
+      recebidoEm:_dias(1,15,20), recebidoPor:G3, retiradoEm:null, retiradoPor:'', docRetirada:'' },
+    { id:'en-3', unidade:'D01', destinatario:'Rafael Toledo', transportadora:'Farmácia · entrega',
+      codigo:'', local:'Balcão da recepção', volume:'Envelope',
+      obs:'Medicamento. Avisado por telefone às 19h40.', recebidoEm:_min(140), recebidoPor:G1,
+      retiradoEm:null, retiradoPor:'', docRetirada:'' },
+    { id:'en-4', unidade:'T01', destinatario:'Ana Duarte', transportadora:'Correios',
+      codigo:'OM118447209BR', local:'Locker 01', volume:'Caixa pequena', obs:'',
+      recebidoEm:_dias(3,10), recebidoPor:G2, retiradoEm:_dias(3,19,10), retiradoPor:'Ana Duarte',
+      docRetirada:'CI 5.220.884', entregouGuarda:G2 },
+    { id:'en-5', unidade:'P06', destinatario:'Natália Bueno', transportadora:'Shopee',
+      codigo:'SP-4471203', local:'Locker 03', volume:'Envelope', obs:'',
+      recebidoEm:_dias(2,16), recebidoPor:G3, retiradoEm:_dias(2,21), retiradoPor:'Natália Bueno',
+      docRetirada:'CI 6.011.773', entregouGuarda:G2 }
+  ];
+
+  /* ── chaves: 3 fora, histórico com devoluções ─────── */
+  function _chaveFora(cod, quem, doc, vinculo, motivo, minAtras, previsao){
+    st.chaves.forEach(function(k){
+      if(k.cod === cod){
+        k.estado = 'fora';
+        k.fora = { quem:quem, doc:doc, vinculo:vinculo, motivo:motivo,
+          previsao:previsao, desde:_min(minAtras), por:G1 };
+        st.chavesHist.unshift({ id:'kh-'+cod, chave:k.id, cod:k.cod, desc:k.desc, quem:quem, doc:doc,
+          motivo:motivo, retirada:_min(minAtras), devolucao:null, porRetirada:G1 });
+      }
+    });
+  }
+  _chaveFora('A08','Nelson Duré','CI 1.998.220','Funcionário','Manutenção da lavadora 4', 195, '22:00');
+  _chaveFora('T05','Sandro Riquelme','CI 3.104.552','Prestador de serviço','Acesso ao condensador pela sacada', 92, '20:30');
+  _chaveFora('A14','Marli Espínola','CI 2.330.771','Funcionário','Reposição de material de limpeza', 40, '19:40');
+  st.chavesHist.push(
+    { id:'kh-h1', chave:'KA10', cod:'A10', desc:'Piscina portão', quem:'Nelson Duré', doc:'CI 1.998.220',
+      motivo:'Tratamento da água', retirada:_dias(1,8), devolucao:_dias(1,10,15),
+      porRetirada:G3, porDevolucao:G3, obsDevolucao:'Sem intercorrência.' },
+    { id:'kh-h2', chave:'KA05', cod:'A05', desc:'Quadro elétrico geral', quem:'Eletricista · Cabral',
+      doc:'CI 2.117.004', motivo:'Troca de disjuntor do corredor', retirada:_dias(2,14),
+      devolucao:_dias(2,16,40), porRetirada:G1, porDevolucao:G1, obsDevolucao:'Disjuntor trocado, testado com o guarda presente.' },
+    { id:'kh-h3', chave:'KA12', cod:'A12', desc:'Espaço gourmet', quem:'Isabel Ortiz', doc:'CI 5.882.110',
+      motivo:'Reserva de aniversário', retirada:_dias(3,18), devolucao:_dias(3,23,50),
+      porRetirada:G2, porDevolucao:G2, obsDevolucao:'Devolvida limpa.' },
+    { id:'kh-h4', chave:'KA13', cod:'A13', desc:'Lockers de encomenda', quem:'Marlene Ojeda',
+      doc:'funcionária', motivo:'Locker 02 emperrado', retirada:_dias(4,9),
+      devolucao:_dias(4,9,40), porRetirada:G3, porDevolucao:G3, obsDevolucao:'' }
+  );
+  st.conferencias = [
+    { id:'cf-1', quando:_min(250), por:G1, faltando:2, bate:true, obs:'' },
+    { id:'cf-2', quando:_dias(1,18,10), por:G2, faltando:1, bate:true, obs:'' },
+    { id:'cf-3', quando:_dias(2,6,20), por:G3, faltando:3, bate:false,
+      obs:'Gancho A14 vazio sem registro. Chave apareceu na gaveta da recepção às 07h.' }
+  ];
+
+  /* ── rondas ───────────────────────────────────────── */
+  function _ronda(id, horario, d, h, n, obs, por){
+    var pontos = {}, base = new Date(); base.setDate(base.getDate()-d); base.setHours(h,0,0,0);
+    for(var i=0;i<n;i++) pontos[i] = new Date(base.getTime() + i*4*60000).toISOString();
+    st.rondas.push({ id:id, inicio:base.toISOString(), horario:horario, por:por, pontos:pontos,
+      obs:obs, fim:new Date(base.getTime() + n*4*60000 + 300000).toISOString() });
+  }
+  /* duas rondas de hoje, ancoradas na hora real da máquina */
+  function _rondaAgora(id, minAtras, n, obs, por){
+    var pontos = {}, base = new Date(Date.now() - minAtras*60000);
+    for(var i=0;i<n;i++) pontos[i] = new Date(base.getTime() + i*4*60000).toISOString();
+    st.rondas.push({ id:id, inicio:base.toISOString(),
+      horario:HORARIOS_RONDA[Math.min(HORARIOS_RONDA.length-1, Math.floor(minAtras/120))],
+      por:por, pontos:pontos, obs:obs, fim:new Date(base.getTime() + n*4*60000 + 300000).toISOString() });
+  }
+  _rondaAgora('rd-1', 195, 14, 'Tudo em ordem. Portão de pedestres com mola dura.', G1);
+  _rondaAgora('rd-2', 62, 14, 'Duas bicicletas fora do bicicletário, no corredor do térreo.', G1);
+  _ronda('rd-3','00:00',1,0,12,'Lâmpada da vaga 07 queimada. Chamado aberto na recepção.',G2);
+  _ronda('rd-4','02:00',1,2,14,'',G2);
+  _ronda('rd-5','04:00',1,4,14,'Portão dos fundos com marca de tentativa de escalada. Registrado no livro com foto.',G2);
+  st.rondas.reverse();
+
+  /* ── câmeras com defeito ──────────────────────────── */
+  st.cameras.forEach(function(c){
+    if(c.id === 'C18'){ c.st = 'off'; c.nota = 'Sem imagem desde ontem 21h. Chamado 4471 aberto com a empresa de CFTV.'; }
+    if(c.id === 'C09'){ c.st = 'deg'; c.nota = 'Infravermelho fraco, à noite só se enxerga vulto.'; }
+    if(c.id === 'C25'){ c.st = 'deg'; c.nota = 'Lente com respingo de cloro, imagem embaçada.'; }
+  });
+
+  /* ── recepção: 6 atendimentos ─────────────────────── */
+  st.atendimentos = [
+    { id:'at-1', quando:_min(75), tipo:'Chamado de manutenção', solicitante:'Marina Cabral', unidade:'P05',
+      contato:'+595 981 000 113', encaminhado:'Manutenção', prazo:dia(),
+      assunto:'Chuveiro elétrico sem água quente desde ontem à noite.', status:'Aberto', por:G1, andamentos:[] },
+    { id:'at-2', quando:_min(410), tipo:'Barulho e convivência', solicitante:'Otávio Lins', unidade:'P07',
+      contato:'+595 981 000 115', encaminhado:'Síndico', prazo:'',
+      assunto:'Som alto no gourmet depois das 23h, terceira vez na semana.', status:'Em andamento', por:G2,
+      andamentos:[{ quando:_min(360), por:G2, texto:'Guarda foi ao local, som reduzido às 23h20. Síndico avisado por mensagem.' }] },
+    { id:'at-3', quando:_dias(1,16), tipo:'Reserva de área comum', solicitante:'Isabel Ortiz', unidade:'P01',
+      contato:'+595 981 000 109', encaminhado:'Resolvido na hora', prazo:'',
+      assunto:'Reserva do espaço gourmet para sábado à noite, 12 pessoas.', status:'Resolvido', por:G3, andamentos:[] },
+    { id:'at-4', quando:_dias(2,11), tipo:'Mudança (entrada ou saída)', solicitante:'Sofia Aquino', unidade:'D02',
+      contato:'+595 981 000 118', encaminhado:'Administradora', prazo:dia(_dias(1,12)),
+      assunto:'Autorização de mudança de entrada com caminhão, das 14h às 18h.', status:'Resolvido', por:G3,
+      andamentos:[{ quando:_dias(1,13), por:G3, texto:'Autorizada. Transportes Aurora, placa AUR-3311.' }] },
+    { id:'at-5', quando:_dias(2,20), tipo:'Achados e perdidos', solicitante:'Guarda', unidade:'ÁREA',
+      contato:'', encaminhado:'—', prazo:'',
+      assunto:'Fone de ouvido preto encontrado na academia. Guardado na gaveta da recepção.', status:'Aberto', por:G1, andamentos:[] },
+    { id:'at-6', quando:_dias(3,9), tipo:'Segunda via de chave ou cartão', solicitante:'João Prado', unidade:'P02',
+      contato:'+595 981 000 110', encaminhado:'Administradora', prazo:'',
+      assunto:'Perdeu o cartão de acesso. Pediu segunda via.', status:'Resolvido', por:G3,
+      andamentos:[{ quando:_dias(2,15), por:G3, texto:'Cartão antigo bloqueado, novo entregue e cobrado no caixa.' }] }
+  ];
+
+  /* ── livro de ocorrências ─────────────────────────── */
+  st.ocorrencias = [
+    { id:'oc-1', quando:_min(70), tipo:'Barulho e convivência', grav:'Atenção',
+      titulo:'Som alto no espaço gourmet após as 23h', unidade:'ÁREA', camera:'C21',
+      texto:'Às 23h05 o morador do P07 ligou para a guarita reclamando de som. Fui ao local às 23h10, ' +
+        'havia seis pessoas e caixa de som ligada. Pedi para reduzir; foi reduzido às 23h20. Não houve discussão.',
+      autor:'Wilson Aquino', auto:false, adendos:[], fechada:false },
+    { id:'oc-2', quando:_dias(1,21,10), tipo:'CFTV', grav:'Grave',
+      titulo:'Câmera C18 fora do ar', unidade:'', camera:'C18',
+      texto:'Corredor 1º andar B sem imagem. Chamado 4471 aberto com a empresa de CFTV às 21h15. ' +
+        'Enquanto durar, ronda a pé no trecho a cada hora.',
+      autor:'Denis Cardozo', auto:true, adendos:[
+        { quando:_dias(1,23), autor:'Denis Cardozo', texto:'Empresa respondeu que o técnico vem amanhã à tarde.' }
+      ], fechada:false },
+    { id:'oc-3', quando:_dias(1,4,20), tipo:'Segurança', grav:'Grave',
+      titulo:'Marca de tentativa de escalada no portão dos fundos', unidade:'', camera:'C09',
+      texto:'Na ronda das 04h encontrei marcas de sapato e tinta raspada na face externa do portão dos fundos, ' +
+        'altura aproximada de 1,80 m. Nada foi levado e nenhum acesso foi violado. Fotos tiradas às 04h25. ' +
+        'A C09 cobre o trecho, mas está com infravermelho fraco.',
+      autor:'Denis Cardozo', auto:false, adendos:[
+        { quando:_dias(1,8), autor:'Marlene Ojeda', texto:'Síndico avisado às 08h. Pediu orçamento de concertina.' }
+      ], fechada:false },
+    { id:'oc-4', quando:_dias(2,6,20), tipo:'Chaves', grav:'Grave',
+      titulo:'Divergência no quadro de chaves', unidade:'', camera:'',
+      texto:'Gancho A14 vazio sem registro de retirada. A chave apareceu na gaveta da recepção às 07h. ' +
+        'Ninguém do turno soube dizer quem retirou.',
+      autor:'Marlene Ojeda', auto:true, adendos:[], fechada:true },
+    { id:'oc-5', quando:_dias(3,15,40), tipo:'Veículo', grav:'Atenção',
+      titulo:'Veículo estacionado em vaga alheia', unidade:'T04', camera:'C10',
+      texto:'Visitante estacionou na vaga V03 sem autorização. Morador chamado, veículo removido às 15h55.',
+      autor:'Denis Cardozo', auto:false, adendos:[], fechada:true },
+    { id:'oc-6', quando:_dias(5,2,10), tipo:'Manutenção', grav:'Informação',
+      titulo:'Lâmpada queimada na vaga 07', unidade:'', camera:'',
+      texto:'Encontrada apagada na ronda das 02h. Chamado aberto na recepção.',
+      autor:'Wilson Aquino', auto:false, adendos:[], fechada:true }
+  ];
+
+  /* ── emergências encerradas ───────────────────────── */
+  st.emergencias = [
+    { id:'em-1', cenario:'Emergência médica', pop:'medica', inicio:_dias(6,3,10), por:G1,
+      passos:{ 0:_dias(6,3,11), 1:_dias(6,3,12), 2:_dias(6,3,13), 3:_dias(6,3,15),
+               4:_dias(6,3,18), 5:_dias(6,3,40), 6:_dias(6,3,52) },
+      notas:'Aluna da P06 com reação alérgica, falta de ar. Ambulância chamada 03h11, chegou 03h34. ' +
+        'Ficha da unidade informava alergia a frutos do mar, passada ao socorrista. ' +
+        'Levada ao Hospital Regional. Mãe avisada às 03h18. Colega acompanhou.',
+      fim:_dias(6,4,5) },
+    { id:'em-2', cenario:'Falta de energia', pop:'energia', inicio:_dias(9,19,40), por:G2,
+      passos:{ 0:_dias(9,19,42), 1:_dias(9,19,45), 2:_dias(9,19,50), 3:_dias(9,19,55), 5:_dias(9,20,5), 6:_dias(9,20,10) },
+      notas:'Queda geral no quarteirão. Nobreak segurou portão e câmeras por 40 minutos. ' +
+        'Protocolo ANDE 88214. Energia voltou às 21h05. Portão operado manualmente, 6 aberturas anotadas no papel.',
+      fim:_dias(9,21,20) }
+  ];
+
+  /* ── caixa e vendas ───────────────────────────────── */
+  st.vendas = [
+    { id:'vd-1', quando:_min(130), item:'Água mineral 20L', qtd:2, preco:18, total:36,
+      forma:'Pix', unidade:'T02', obs:'', por:G1, quitado:true },
+    { id:'vd-2', quando:_min(300), item:'Ficha de lavanderia', qtd:4, preco:12, total:48,
+      forma:'Dinheiro', unidade:'P05', obs:'', por:G1, quitado:true },
+    { id:'vd-3', quando:_min(340), item:'Cápsula de café', qtd:10, preco:4, total:40,
+      forma:'Dinheiro', unidade:'D01', obs:'', por:G1, quitado:true },
+    { id:'vd-4', quando:_dias(1,17), item:'Botijão de gás 13kg', qtd:1, preco:145, total:145,
+      forma:'Transferência', unidade:'D03', obs:'Entregue na unidade.', por:G3, quitado:true },
+    { id:'vd-5', quando:_dias(2,15), item:'Cartão de acesso 2ª via', qtd:1, preco:35, total:35,
+      forma:'Fiado', unidade:'P02', obs:'Combinado descontar no boleto do mês.', por:G3, quitado:false },
+    { id:'vd-6', quando:_dias(3,11), item:'Uso do gourmet taxa', qtd:1, preco:80, total:80,
+      forma:'Pix', unidade:'P01', obs:'Reserva de sábado.', por:G3, quitado:true }
+  ];
+
+  /* ── auditoria: o ano lançado mês a mês ───────────── */
+  var mesAtual = new Date().getMonth() + 1;
+  var ocupacao = [0.79,0.84,0.89,0.95,1.00,1.00,0.95,0.89,0.89,0.89,0.84,0.79];
+  var receitaCheia = 52181;
+  for(var m = 1; m <= mesAtual; m++){
+    var oc = ocupacao[m-1];
+    st.lancamentos.push(
+      { id:'lc-a'+m, quando:_mesDia(m,5,10), sentido:'entrada', categoria:'Aluguel de unidade',
+        desc:'Aluguel de '+Math.round(19*oc)+' unidades ocupadas de 19', valor:Math.round(receitaCheia*oc),
+        forma:'Transferência', fornecedor:'Moradores', nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-b'+m, quando:_mesDia(m,5,11), sentido:'entrada', categoria:'Lavanderia',
+        desc:'Fichas e lavagens do mês', valor:1180 + m*15, forma:'Dinheiro', fornecedor:'Moradores',
+        nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-c'+m, quando:_mesDia(m,5,12), sentido:'entrada', categoria:'Vending',
+        desc:'Três máquinas', valor:760 + m*20, forma:'Dinheiro', fornecedor:'Moradores',
+        nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-d'+m, quando:_mesDia(m,10,9), sentido:'saida', categoria:'Energia',
+        desc:'Conta de energia da área comum e bombas', valor:3620 + (m%3)*280, forma:'Boleto',
+        fornecedor:'ANDE', nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-e'+m, quando:_mesDia(m,10,9), sentido:'saida', categoria:'Água',
+        desc:'Consumo do condomínio', valor:1040 + (m%4)*90, forma:'Boleto', fornecedor:'ESSAP',
+        nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-f'+m, quando:_mesDia(m,10,10), sentido:'saida', categoria:'Internet e telefonia',
+        desc:'Link do prédio e telefonia da guarita', valor:890, forma:'Boleto', fornecedor:'Provedor local',
+        nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-g'+m, quando:_mesDia(m,5,14), sentido:'saida', categoria:'Folha e encargos',
+        desc:'Equipe de guarita 24h e limpeza', valor:9840, forma:'Transferência', fornecedor:'Folha',
+        nota:true, autorizou:'Marcus', por:'Administração', origem:'exemplo' },
+      { id:'lc-h'+m, quando:_mesDia(m,12,15), sentido:'saida', categoria:'Limpeza e insumos',
+        desc:'Material de limpeza e descartáveis', valor:1180 + (m%2)*260, forma:'Cartão',
+        fornecedor:'Distribuidora Norte', nota:(m%4!==0), autorizou:'Zelador', por:'Administração', origem:'exemplo' },
+      { id:'lc-i'+m, quando:_mesDia(m,18,16), sentido:'saida', categoria:'Manutenção predial',
+        desc:'Reparos do mês', valor:760 + (m%5)*340, forma:'Dinheiro', fornecedor:'Diversos',
+        nota:(m%3!==0), autorizou:'Zelador', por:'Administração', origem:'exemplo' },
+      { id:'lc-j'+m, quando:_mesDia(m,20,11), sentido:'saida', categoria:'Jardim e piscina',
+        desc:'Tratamento da piscina e jardinagem', valor:690, forma:'Pix', fornecedor:'Aqua Verde',
+        nota:true, autorizou:'Zelador', por:'Administração', origem:'exemplo' },
+      { id:'lc-k'+m, quando:_mesDia(m,25,10), sentido:'saida', categoria:'Impostos e taxas',
+        desc:'Tributos e taxas do mês', valor:2380, forma:'Boleto', fornecedor:'Município',
+        nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+      { id:'lc-l'+m, quando:_mesDia(m,28,10), sentido:'saida', categoria:'Administração',
+        desc:'Taxa da administradora', valor:1870, forma:'Boleto', fornecedor:'Administradora',
+        nota:true, autorizou:'Marcus', por:'Administração', origem:'exemplo' }
+    );
+  }
+  st.lancamentos.push(
+    { id:'lc-obra', quando:_mesDia(Math.min(3,mesAtual),14,10), sentido:'saida', categoria:'Obra e melhorias',
+      desc:'Fechamento do deck e troca do piso da área de convivência', valor:38400, forma:'Transferência',
+      fornecedor:'Construtora parceira', nota:true, autorizou:'Marcus', por:'Administração', origem:'exemplo' },
+    { id:'lc-seg', quando:_mesDia(Math.min(2,mesAtual),9,10), sentido:'saida', categoria:'Seguro',
+      desc:'Seguro predial anual', valor:4780, forma:'Cartão', fornecedor:'Seguradora',
+      nota:true, autorizou:'Marcus', por:'Administração', origem:'exemplo' },
+    { id:'lc-cftv', quando:_mesDia(mesAtual,3,15), sentido:'saida', categoria:'Segurança e guarita',
+      desc:'Contrato de manutenção de CFTV e alarme', valor:1450, forma:'Boleto', fornecedor:'Empresa de CFTV',
+      nota:true, autorizou:'Marcus', por:'Administração', origem:'exemplo' },
+    { id:'lc-est', quando:_mesDia(mesAtual,7,12), sentido:'entrada', categoria:'Estadia por temporada',
+      desc:'Duas unidades em temporada durante as férias', valor:6280, forma:'Pix', fornecedor:'Hóspedes',
+      nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+    { id:'lc-mer', quando:_mesDia(mesAtual,7,13), sentido:'entrada', categoria:'Mercado',
+      desc:'Repasse do mercado da frente comercial', valor:1520, forma:'Transferência', fornecedor:'Operador',
+      nota:true, autorizou:'Administração', por:'Administração', origem:'exemplo' },
+    { id:'lc-sn1', quando:_mesDia(mesAtual,11,17), sentido:'saida', categoria:'Manutenção predial',
+      desc:'Serviço de solda no portão dos fundos, pago em dinheiro na hora', valor:850, forma:'Dinheiro',
+      fornecedor:'Serralheiro avulso', nota:false, autorizou:'', por:'Administração', origem:'exemplo' },
+    { id:'lc-sn2', quando:_mesDia(mesAtual,13,16), sentido:'saida', categoria:'Outros',
+      desc:'Compra avulsa sem identificação de fornecedor', valor:430, forma:'Dinheiro',
+      fornecedor:'', nota:false, autorizou:'', por:'Administração', origem:'exemplo' }
+  );
+  st.vendas.forEach(function(v){
+    st.lancamentos.push({ id:'lc-v-'+v.id, quando:v.quando, sentido:'entrada', categoria:'Outros',
+      desc:'Venda na guarita: '+v.item, valor:v.total, forma:v.forma, fornecedor:'', nota:true,
+      autorizou:'', por:v.por, origem:'caixa' });
+  });
+  st.lancamentos.sort(function(a,b){ return a.quando < b.quando ? 1 : -1; });
+
+  /* ── um par de restrições e autorizados, para a ficha ── */
+  st.unidades.forEach(function(u){
+    if(u.cod === 'T01'){ u.autorizados = [{ nome:'Rita Duarte', doc:'RG 12.884.331 MS' }];
+      u.saude = { sangue:'O+', alergia:'Dipirona', condicao:'', remedio:'', plano:'Unimed · carteirinha na ficha' }; }
+    if(u.cod === 'P06'){ u.saude = { sangue:'A-', alergia:'Frutos do mar — reação grave', condicao:'Asma',
+      remedio:'Bombinha de salbutamol', plano:'Assistência estudantil' };
+      u.obs = 'Tem caneta de adrenalina na gaveta da mesa, informado pela própria aluna.'; }
+    if(u.cod === 'P07'){ u.restricoes = ['Ex-companheiro · Jonas M. — medida protetiva, não entra e não recebe informação'];
+      u.obs = 'Se procurarem por ela na portaria, não confirmar que mora aqui.'; }
+    if(u.cod === 'D01'){ u.autorizados = [{ nome:'Iara Toledo', doc:'RG 9.771.220 MS' },
+      { nome:'Faxina · Marli Espínola', doc:'CI 2.330.771' }]; }
+  });
+}
+
+/* ── telefones preenchidos e conferidos (demonstração) ── */
+function contatosExemplo(st){
+  var FONES = {
+    'Hospital Regional PJC':'+595 336 272 100',
+    'Sindico':'+595 981 447 220',
+    'Zelador':'+595 981 447 231',
+    'Administradora':'+595 336 271 940',
+    'Empresa de seguranca':'+595 981 300 118',
+    'Proprietario M7M':'+55 67 99900-0001',
+    'Eletricista':'+595 982 114 770',
+    'Hidraulico':'+595 982 114 771',
+    'Chaveiro 24h':'+595 981 662 004',
+    'Portao automatico':'+595 981 220 447',
+    'CFTV e monitoramento':'+595 336 274 118',
+    'Piscina':'+595 981 774 002',
+    'Dedetizacao':'+595 981 774 119',
+    'ANDE energia PY':'+595 336 272 020',
+    'ESSAP agua PY':'+595 336 272 030',
+    'Distribuidora de gas':'+595 981 004 220',
+    'Provedor de internet':'+595 336 275 500'
+  };
+  var SEM_CONFERIR = ['Chaveiro 24h','Dedetizacao','Provedor de internet','Hospital Regional PJC'];
+  st.contatos.forEach(function(c, i){
+    if(!c.tel && FONES[c.nome]) c.tel = FONES[c.nome];
+    if(SEM_CONFERIR.indexOf(c.nome) < 0){
+      c.verificadoEm = _dias(3 + (i % 9), 10);
+      c.verificadoPor = i % 2 ? 'Marlene Ojeda' : 'Wilson Aquino';
+    }
+  });
+  st.contatos.push(
+    { id:'F-ex1', grupo:'Condominio', nome:'Guarita · ramal interno', tel:'+595 981 447 200',
+      obs:'Linha do posto, 24 horas', verificadoEm:_dias(2,9), verificadoPor:'Wilson Aquino' },
+    { id:'F-ex2', grupo:'Manutencao', nome:'Lavanderia · assistência das máquinas', tel:'+595 982 550 118',
+      obs:'8 lavadoras em contrato', verificadoEm:_dias(6,11), verificadoPor:'Marlene Ojeda' },
+    { id:'F-ex3', grupo:'Emergencia Brasil', nome:'Hospital Regional de Ponta Porã', tel:'+55 67 3431-1500',
+      obs:'Pronto-socorro do lado brasileiro', verificadoEm:_dias(4,15), verificadoPor:'Wilson Aquino' }
+  );
+}
+
+/* ── autorizados, veículos e pets em todas as unidades ── */
+function cadastroExemplo(st){
+  var MODELOS = [['Onix','prata'],['HB20','branco'],['Ford Ka','preto'],['Renegade','cinza'],
+    ['Gol','vermelho'],['Kwid','branco'],['Fiat Mobi','azul'],['Civic','preto'],['Duster','prata'],['Yaris','branco']];
+  var PARENTES = ['mãe','pai','irmã','irmão','tia','primo'];
+  st.unidades.forEach(function(u, i){
+    if(u.vaga){
+      var m = MODELOS[i % MODELOS.length];
+      u.veiculos = [{ placa:'PJC-' + (1000 + i*37).toString().slice(0,4), modelo:m[0], cor:m[1], vaga:u.vaga }];
+    } else {
+      u.veiculos = [];
+    }
+    if(!u.autorizados || !u.autorizados.length){
+      var r = u.resp[0];
+      u.autorizados = [{ nome:r.nome, doc:'responsável cadastrado' }];
+      if(i % 3 === 0) u.autorizados.push({ nome:'Colega de curso · '+PARENTES[i % PARENTES.length]+' informado', doc:'confirma por telefone' });
+    }
+    if(!u.saude.sangue) u.saude.sangue = ['O+','A+','B+','AB+','O-','A-'][i % 6];
+    if(!u.saude.plano) u.saude.plano = i % 2 ? 'Assistência estudantil' : 'Plano particular';
+    if(!u.obs) u.obs = 'Contrato de 12 meses. Vencimento do aluguel no dia 5.';
+  });
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   MANUAL — como operar cada tela, campo por campo
+   ══════════════════════════════════════════════════════════════ */
+var MANUAL = [
+ { t:'Antes de tudo: abrir o turno',
+   p:['Todo registro sai com o nome de quem estava de serviço. Sem turno aberto, o registro sai com a etiqueta "sem turno aberto" e perde valor de prova.',
+      'Abra o turno em <strong>Turno → Abrir turno</strong>. Marque só o que você conferiu de verdade — o sistema grava a hora de cada item marcado.',
+      'Ao sair, feche o turno. O sistema monta sozinho a passagem: quem está dentro, quais chaves estão fora, quais encomendas ficaram e o que aconteceu.'] },
+ { t:'Painel',
+   p:['É a tela de abertura. Cada quadrado é um clique para a tela correspondente.',
+      '<strong>Dentro agora</strong> — pessoas de fora que entraram e ainda não saíram. Se esse número não zera à noite, alguém saiu sem registro.',
+      '<strong>Chaves fora</strong> — fica vermelho acima de três. Chave que atravessa o turno tem que aparecer na passagem.',
+      '<strong>Câmeras com falha</strong> — sem câmera no trecho, a ronda a pé cobre o buraco. E isso vai para o livro.'] },
+ { t:'Acessos — quem entra',
+   p:['<strong>Tipo</strong>: escolha certo, porque o relatório do ano é somado por tipo. Entrega não é visitante; corretor não é prestador.',
+      '<strong>Documento</strong>: peça sempre. Se a pessoa se recusa, ela não entra — e isso vira ocorrência.',
+      '<strong>Unidade de destino</strong>: ao escolher, o sistema mostra o telefone do aluno e avisa se aquela unidade tem restrição cadastrada. Restrição significa entrada proibida, sem discussão e sem exceção por insistência.',
+      '<strong>Autorizado por quem</strong>: escreva o nome de quem atendeu o interfone, não "morador". Esse campo é o que protege o guarda depois.',
+      '<strong>Placa</strong>: sempre em veículo, mesmo de aplicativo.',
+      'A saída se registra pelo botão <em>Saída</em>. O sistema calcula sozinho quanto tempo a pessoa ficou.'] },
+ { t:'Encomendas',
+   p:['Encomenda que entra na portaria vira responsabilidade da portaria. Registre transportadora, código e onde guardou.',
+      'Pacote danificado, molhado ou aberto: descreva na observação no ato do recebimento, não depois.',
+      'Na entrega, anote quem retirou e o documento conferido. Pacote parado há três dias ou mais aparece em vermelho.'] },
+ { t:'Chaves — o estoque',
+   p:['Cada chave tem um gancho fixo. Gancho vazio sem registro é chave perdida.',
+      '<strong>Retirar</strong>: nome, documento retido, vínculo, motivo e previsão de devolução. Chave não sai sem nome.',
+      '<strong>Conferir o quadro</strong>: uma vez por turno, conte gancho a gancho e compare com a tela. Se não bater, o sistema abre ocorrência grave sozinho.',
+      'O histórico mostra quem levou, quando e se devolveu. Chave sem devolução aparece em vermelho para sempre — até alguém devolver.'] },
+ { t:'Rondas',
+   p:['Os horários previstos estão na tela. Ronda não feita depois do horário fica vermelha.',
+      'Marque cada ponto no momento em que você estiver nele. A hora é gravada sozinha — marcar tudo de uma vez no fim é fraude e aparece pelo padrão dos horários.',
+      'Observação escrita vira registro automático no livro.'] },
+ { t:'Câmeras',
+   p:['Três estados: no ar, degradada e fora do ar. Degradada é imagem ruim, infravermelho queimado, foco perdido — não é "está funcionando".',
+      'Ao marcar fora do ar, o sistema abre ocorrência sozinho, com a hora. É esse registro que sustenta a cobrança do contrato de manutenção.'] },
+ { t:'Recepção',
+   p:['Tudo que a recepção recebe vira protocolo com hora e nome: reclamação, chamado de manutenção, mudança, documento entregue, achado e perdido.',
+      '<strong>Encaminhado a</strong> define de quem é a bola. <strong>Prazo combinado</strong> é o que você prometeu — não prometa o que não depende de você.',
+      'Cada novidade entra como andamento; nada é apagado.'] },
+ { t:'Alunos e pais',
+   p:['A ficha do aluno é o que salva vida na emergência: tipo sanguíneo, alergia, condição, remédio de uso e plano de saúde.',
+      '<strong>Autorizados</strong>: entram sem confirmação por telefone. Ponha só quem o próprio aluno autorizou por escrito.',
+      '<strong>Entrada proibida</strong>: medida protetiva, ex-parceiro, cobrador. A guarita não abre por insistência, não avisa que existe restrição e não informa em qual unidade a pessoa mora.',
+      '<strong>Acesso dos pais</strong>: cada responsável tem um código próprio. Ele vê entradas e saídas do próprio filho, encomendas, ocorrências da unidade e financeiro da unidade. Não vê câmera, não vê outro aluno, não vê dado de visitante de terceiro.'] },
+ { t:'Telefones',
+   p:['Todo contato nasce como <em>não conferido</em>. Número de emergência se confere ligando, não copiando da internet.',
+      'Depois de ligar e o número atender, abra o contato e marque como conferido — fica gravado a data e quem conferiu.',
+      'Imprima a lista e deixe uma cópia em papel na guarita. Sistema depende de energia; papel não.'] },
+ { t:'Emergência',
+   p:['Escolha o cenário e siga os passos na ordem. Cada passo marcado grava a hora real.',
+      'A linha do tempo é o que resolve seguro, polícia e processo depois. É por isso que se marca no momento, não no fim.',
+      'Ao encerrar, tudo vai para o livro de ocorrências: horas, passos feitos, passos não feitos e o relato.',
+      'O bloco <em>Nunca</em> de cada cenário existe porque cada item ali já matou alguém em algum lugar.'] },
+ { t:'Ocorrências',
+   p:['Escreva o que viu e ouviu, com hora, sem opinião. "Estava alterado" não; "falou alto, cambaleava e disse tais palavras" sim.',
+      'Nada é apagado. Correção entra como adendo, com hora e autor.',
+      '<strong>Câmera</strong>: anote qual câmera cobre o trecho. A gravação é sobrescrita em cerca de 30 dias — pedir depois disso é pedir nada.'] },
+ { t:'Caixa e vendas',
+   p:['Toda saída de item passa pelo caixa, inclusive fiado. Fiado em aberto aparece em amarelo até ser quitado.',
+      'No fim do turno, feche o caixa: conte o dinheiro da gaveta e lance. Diferença de qualquer valor abre ocorrência.',
+      'Cada venda entra sozinha na auditoria como entrada.'] },
+ { t:'Auditoria — o ano fechado',
+   p:['É aqui que se sabe se o condomínio deu ganho ou prejuízo.',
+      '<strong>Lançar gasto</strong>: data, valor, categoria, fornecedor, forma, e se tem nota. Gasto sem nota entra — mas fica somado num quadrado separado, porque é ele que impede a dedução e atrai autuação.',
+      '<strong>Quem autorizou</strong>: compra sem autorização é achado de auditoria. Preencher esse campo é o que separa gasto de sumiço.',
+      'A tela mostra mês a mês, para onde foi o dinheiro por categoria, e o resultado do ano.',
+      'A faixa cinza compara o que entrou com a receita cheia dos 19 apartamentos a preço de 10/08/2026. A diferença é o que a operação deixou na mesa — vacância, inadimplência ou desconto.'] },
+ { t:'Dados e backup',
+   p:['Os dados ficam gravados neste computador, no navegador. Não sobem para lugar nenhum.',
+      'Exporte o backup toda semana e guarde no NAS. Computador de guarita queima, é formatado e é trocado.',
+      'Importar substitui o que está na tela pelo arquivo — confirme antes.'] }
+];
+
+function v_manual(){
+  return '<div class="faixa">❓ Este manual descreve exatamente o sistema que está rodando nesta tela. ' +
+    'Imprima e deixe na guarita: quem entra no turno de madrugada não tem a quem perguntar.</div>' +
+    '<div class="linha-b" style="margin-bottom:14px"><button class="b" onclick="window.print()">Imprimir o manual inteiro</button></div>' +
+    MANUAL.map(function(m){
+      return cartao(m.t, m.p.map(function(x){ return '<p style="margin:0 0 8px">'+x+'</p>'; }).join(''));
+    }).join('') +
+    cartao('Atalhos de teclado',
+      '<div class="peq">Alt+1 Painel · Alt+2 Acessos · Alt+3 Encomendas · Alt+4 Chaves · Alt+5 Rondas · ' +
+      'Alt+6 Câmeras · Alt+7 Recepção · Alt+8 Alunos · Alt+9 Telefones · Esc fecha a janela aberta</div>');
+}
+
+/* ── DADOS E BACKUP ──────────────────────────────────── */
+function v_dados(){
+  var tam = 0;
+  try{ tam = (localStorage.getItem(LS) || '').length; }catch(e){}
+  var contas = [
+    ['Unidades', S.unidades.length], ['Chaves no quadro', S.chaves.length],
+    ['Acessos', S.acessos.length], ['Encomendas', S.encomendas.length],
+    ['Ocorrências', S.ocorrencias.length], ['Rondas', S.rondas.length],
+    ['Emergências', S.emergencias.length], ['Atendimentos', S.atendimentos.length],
+    ['Vendas', S.vendas.length], ['Lançamentos', S.lancamentos.length],
+    ['Turnos fechados', S.turnos.length], ['Contatos', S.contatos.length]
+  ].map(function(c){
+    return '<tr><td>'+esc(c[0])+'</td><td class="dir num">'+c[1]+'</td></tr>'; });
+  return '<div class="faixa">⛁ Os dados ficam neste computador, dentro do navegador. Nada sai daqui sozinho. ' +
+      'Backup é responsabilidade humana: exporte e guarde no NAS.</div>' +
+    '<div class="linha-b" style="margin-bottom:14px">' +
+      '<button class="b p" data-act="exportar">Exportar backup (.json)</button>' +
+      '<input type="file" id="arq" accept="application/json" style="display:none">' +
+      '<button class="b" data-act="importar">Importar backup</button>' +
+      '<button class="b" data-act="limparDemo">Apagar só os dados de demonstração</button>' +
+      '<button class="b" data-act="recarregar">Recarregar os exemplos</button>' +
+    '</div>' +
+    '<div class="grade g2">' +
+      cartao('O que está gravado', tabela([{t:'Registro'},{t:'Quantidade',dir:true}], contas), '', true) +
+      cartao('Ficha técnica',
+        '<div class="peq">Versão '+VERSAO+' · '+DATA_VERSAO+'<br>' +
+        'Chave de gravação: <span class="mono">'+LS+'</span><br>' +
+        'Tamanho gravado: <span class="mono">'+(tam/1024).toFixed(1)+' KB</span><br>' +
+        'Quantitativo oficial 10/08/2026: '+INVENTARIO.apartamentos+' apartamentos, '+INVENTARIO.leitos+' leitos, ' +
+        INVENTARIO.vagas+' vagas, '+INVENTARIO.camerasPrevistas+' câmeras previstas.<br>' +
+        'Preços: '+brl0(PRODUTOS.smart.preco)+' Smart · '+brl0(PRODUTOS.plus.preco)+' Plus · '+
+        brl0(PRODUTOS.signature.preco)+' Signature (10/08/2026).<br>' +
+        'Origem do sistema: app do condomínio M7M, mesma paleta e mesmo padrão técnico.</div>') +
+    '</div>';
+}
+function exportar(){
+  var nome = 'm7m-guarita-' + dia() + '.json';
+  var blob = new Blob([JSON.stringify(S, null, 2)], { type:'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nome; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  torrada('Backup gerado', nome + ' — guarde no NAS', 'ok');
+}
+function importar(){
+  var inp = document.getElementById('arq'); if(!inp) return;
+  inp.onchange = function(){
+    var f = inp.files[0]; if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      var dados;
+      try{ dados = JSON.parse(r.result); }
+      catch(e){ torrada('Arquivo inválido','Não é um backup deste sistema','ng'); return; }
+      if(!dados.unidades){ torrada('Arquivo inválido','Falta o cadastro de unidades','ng'); return; }
+      folha('Importar backup', f.name,
+        '<div class="faixa pg">Isto substitui tudo que está gravado neste computador pelo conteúdo do arquivo. ' +
+        'Se o que está na tela ainda não foi exportado, cancele e exporte primeiro.</div>' +
+        '<div class="peq">O arquivo traz: '+ (dados.unidades||[]).length +' unidades, '+
+        (dados.acessos||[]).length +' acessos, '+ (dados.ocorrencias||[]).length +' ocorrências, '+
+        (dados.lancamentos||[]).length +' lançamentos.</div>',
+        [ { txt:'Cancelar', fn:fechar },
+          { txt:'Exportar o atual antes', fn:function(){ exportar(); } },
+          { txt:'Substituir agora', cls:'d', fn:function(){
+            S = dados; gravar(); fechar(); pintar(); torrada('Backup importado','','ok'); } } ]);
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function limparDemo(){
+  var demo = S.unidades.filter(function(u){ return u.demo; }).length;
+  folha('Apagar dados de demonstração', 'Só o que foi criado como exemplo',
+    '<div class="faixa av">Vai apagar: as pessoas fictícias das ' + demo + ' unidades ainda marcadas como demonstração. ' +
+    'Os apartamentos, o quadro de chaves, os telefones e tudo que você registrou continuam.</div>' +
+    '<p class="peq mut">Nada de movimento é apagado: acessos, ocorrências, chaves, caixa e auditoria ficam como estão.</p>',
+    [ { txt:'Cancelar', fn:fechar },
+      { txt:'Exportar backup antes', fn:function(){ exportar(); } },
+      { txt:'Apagar os nomes fictícios', cls:'d', fn:function(){
+        S.unidades.forEach(function(u){
+          if(u.demo){
+            u.aluno = ''; u.tel = ''; u.curso = '';
+            u.resp = [{ nome:'', rel:'', tel:'', acessoPais:false, codigo:u.resp[0] ? u.resp[0].codigo : '' }];
+            u.saude = { sangue:'', alergia:'', condicao:'', remedio:'', plano:'' };
+            u.demo = false;
+          }
+        });
+        S.demo = false; gravar(); fechar(); pintar();
+        torrada('Cadastro em branco','Agora entre com os alunos reais em Alunos e pais','ok');
+      } } ]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EVENTOS
+   ══════════════════════════════════════════════════════════════ */
+function acao(nome, extra){
+  var mapa = {
+    novoAcesso:novoAcesso, novaEncomenda:novaEncomenda, novaOcorrencia:novaOcorrencia,
+    novaRonda:function(){ novaRonda(); }, novaVenda:novaVenda, conferirQuadro:conferirQuadro,
+    novoAtendimento:function(){ novoAtendimento(extra); }, portalPais:portalPais, novoContato:novoContato,
+    fecharCaixa:fecharCaixa, novaSaida:function(){ novoLancamento('saida'); },
+    novaEntrada:function(){ novoLancamento('entrada'); }, abrirTurno:abrirTurno,
+    fecharTurno:fecharTurno, relatorioTurno:relatorioTurno, exportar:exportar, importar:importar,
+    limparDemo:limparDemo, recarregar:recarregarExemplos,
+    sairDemo:function(){ S.demo = false; gravar(); pintar(); torrada('Aviso removido','','ok'); }
+  };
+  if(mapa[nome]) mapa[nome]();
+}
+
+document.addEventListener('click', function(ev){
+  var t = ev.target, el;
+  if((el = t.closest('[data-fb]'))){
+    var i = +el.getAttribute('data-fb');
+    if(_ok && _ok[i]) _ok[i](); else fechar();
+    return;
+  }
+  if((el = t.closest('[data-ir]'))){ ir(el.getAttribute('data-ir')); return; }
+  if((el = t.closest('[data-act]'))){ acao(el.getAttribute('data-act'), el.getAttribute('data-tipo')); return; }
+  if((el = t.closest('[data-saida]'))){ registrarSaida(el.getAttribute('data-saida')); return; }
+  if((el = t.closest('[data-crach]'))){ cracha(el.getAttribute('data-crach')); return; }
+  if((el = t.closest('[data-retirar]'))){ retirarEncomenda(el.getAttribute('data-retirar')); return; }
+  if((el = t.closest('[data-chave]'))){ abrirChave(el.getAttribute('data-chave')); return; }
+  if((el = t.closest('[data-ronda]'))){ novaRonda(el.getAttribute('data-ronda')); return; }
+  if((el = t.closest('[data-cam]'))){ alterarCamera(el.getAttribute('data-cam')); return; }
+  if((el = t.closest('[data-pop]'))){ abrirPop(el.getAttribute('data-pop')); return; }
+  if((el = t.closest('[data-emg]'))){
+    var id = el.getAttribute('data-emg'), e = null;
+    S.emergencias.forEach(function(x){ if(x.id === id) e = x; });
+    if(e) abrirPop(e.pop, e.id);
+    return;
+  }
+  if((el = t.closest('[data-oc]'))){ verOcorrencia(el.getAttribute('data-oc')); return; }
+  if((el = t.closest('[data-un]'))){ fichaUnidade(el.getAttribute('data-un')); return; }
+  if((el = t.closest('[data-fone]'))){ editarContato(el.getAttribute('data-fone')); return; }
+  if((el = t.closest('[data-atend]'))){ verAtendimento(el.getAttribute('data-atend')); return; }
+  if((el = t.closest('[data-lanc]'))){ verLancamento(el.getAttribute('data-lanc')); return; }
+  if((el = t.closest('[data-quitar]'))){
+    var vid = el.getAttribute('data-quitar');
+    S.vendas.forEach(function(v){ if(v.id === vid){ v.quitado = true; v.quitadoEm = agora(); } });
+    gravar(); pintar(); torrada('Fiado quitado','','ok');
+    return;
+  }
+  if(t.id === 'fX' || t.id === 'scrim') fechar();
+  if(t.id === 'btSos') ir('emergencia');
+  if(t.id === 'btTema') trocarTema();
+});
+
+document.addEventListener('input', function(ev){
+  if(ev.target.id === 'bsc'){
+    BUSCA = ev.target.value;
+    var pos = ev.target.selectionStart;
+    pintar();
+    var novo = document.getElementById('bsc');
+    if(novo){ novo.focus(); novo.setSelectionRange(pos, pos); }
+  }
+});
+document.addEventListener('change', function(ev){
+  if(ev.target.id === 'selAno'){ ANO_FILTRO = ev.target.value; pintar(); }
+});
+document.addEventListener('keydown', function(ev){
+  if(ev.key === 'Escape'){ fechar(); return; }
+  if(ev.altKey && ev.key >= '1' && ev.key <= '9'){
+    var ordem = ['painel','acessos','encomendas','chaves','rondas','cameras','recepcao','alunos','telefones'];
+    var v = ordem[+ev.key - 1];
+    if(v){ ev.preventDefault(); fechar(); ir(v); }
+  }
+});
+function trocarTema(){
+  S.tema = S.tema === 'claro' ? 'escuro' : 'claro';
+  document.documentElement.setAttribute('data-tema', S.tema === 'claro' ? 'claro' : 'escuro');
+  gravar();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REGISTRO DAS TELAS
+   As funções vivem dentro do módulo, então a navegação usa este
+   mapa — não o objeto window.
+   ══════════════════════════════════════════════════════════════ */
+TELAS = {
+  painel:v_painel, acessos:v_acessos, encomendas:v_encomendas, chaves:v_chaves,
+  rondas:v_rondas, cameras:v_cameras, recepcao:v_recepcao, alunos:v_alunos,
+  telefones:v_telefones, emergencia:v_emergencia, ocorrencias:v_ocorrencias,
+  caixa:v_caixa, auditoria:v_auditoria, turno:v_turno, manual:v_manual, dados:v_dados
+};
+
+/* ══════════════════════════════════════════════════════════════
+   PARTIDA
+   ══════════════════════════════════════════════════════════════ */
+carregar();
+document.documentElement.setAttribute('data-tema', S.tema === 'claro' ? 'claro' : 'escuro');
+document.getElementById('verRod').textContent = 'v' + VERSAO + ' · ' + DATA_VERSAO;
+relogio(); setInterval(relogio, 1000);
+setInterval(function(){ if(VIEW === 'painel' && !document.getElementById('scrim').classList.contains('on')) pintar(); }, 60000);
+pintar();
+})();
+</script>
+</body>
+</html>
